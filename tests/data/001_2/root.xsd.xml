@@ -1,42 +1,52 @@
 <Файл ИдФайл="string" ВерсФорм="4.02" ТипИнф="ВЫДУДЛИЧН_РЕГЛ" ВерсПрог="string" КолДок="100">
-  <ИдОтпр ДолжОтв="string" Тлф="string" E-mail="string">
-    <ФИООтв Фамилия="string" Имя="string" Отчество="string"/>
-  </ИдОтпр>
-  <КодНОПост>stri</КодНОПост>
-  <!--1 or more repetitions:-->
-  <Документ ИдДок="string">
-    <СвОргРег НаимОрг="string" ИННЮЛ="stringstri" КПП="stringstr" ОГРН="stringstrings"/>
-    <СвЗамВыд>
-      <ДатаПостНО>stringstri</ДатаПостНО>
-      <Выд_Зам_Утрат>
-        <!--You have a CHOICE of the next 2 items at this level-->
-        <Замена ПризнДок="s" ПричЗамДок="st" ДатаДокФакт="stringstri">
-          <СведФЛ ДатаРожд="stringstri" МестоРожд="string" Пол="1" ПрАдрМЖ="s" КодКладр="string" АдрМЖРФТекст="string">
-            <ФИОФЛ Фамилия="string" Имя="string" Отчество="string"/>
-            <АдресМЖ КодРегион="st" Город="string" Район="string" НаселПункт="string" Улица="string" Дом="string" Корпус="string" Кварт="string"/>
-            <АдресМЖКЛАДР КодРегион="st" Город="string" Район="string" НаселПункт="string" Улица="string" Дом="string" Корпус="string" Кварт="string"/>
-          </СведФЛ>
-          <ВыдДок КодВидДок="st" СерНомДок="string" ДатаУдЛичн="stringstri" КемВыдДок="string" КодПодрВыдДок="strings"/>
-          <ЗамДок КодВидДок="st" СерНомДок="string" ДатаУдЛичн="stringstri" КемВыдДок="string" КодПодрВыдДок="strings"/>
-          <!--Optional:-->
-          <ЗамРекв ДатаРожд="stringstri" МестоРожд="string" Пол="1">
-            <ФИОФЛ Фамилия="string" Имя="string" Отчество="string"/>
-          </ЗамРекв>
-        </Замена>
-        <ПервВыдача ПризнДок="s" ПричВыдДок="st" ДатаДокФакт="stringstri">
-          <СведФЛ ДатаРожд="stringstri" МестоРожд="string" Пол="1" ПрАдрМЖ="s" КодКладр="string" АдрМЖРФТекст="string">
-            <ФИОФЛ Фамилия="string" Имя="string" Отчество="string"/>
-            <АдресМЖ КодРегион="st" Город="string" Район="string" НаселПункт="string" Улица="string" Дом="string" Корпус="string" Кварт="string"/>
-            <АдресМЖКЛАДР КодРегион="st" Город="string" Район="string" НаселПункт="string" Улица="string" Дом="string" Корпус="string" Кварт="string"/>
-          </СведФЛ>
-          <ВыдДок КодВидДок="st" СерНомДок="string" ДатаУдЛичн="stringstri" КемВыдДок="string" КодПодрВыдДок="strings"/>
-          <УдЛичн КодВидДок="st" СерНомДок="string" ДатаУдЛичн="stringstri" КемВыдДок="string" КодПодрВыдДок="strings"/>
-          <!--Optional:-->
-          <ЗамРекв ДатаРожд="stringstri" МестоРожд="string" Пол="1">
-            <ФИОФЛ Фамилия="string" Имя="string" Отчество="string"/>
-          </ЗамРекв>
-        </ПервВыдача>
-      </Выд_Зам_Утрат>
-    </СвЗамВыд>
-  </Документ>
+    <ИдОтпр ДолжОтв="string" Тлф="string" E-mail="string">
+        <ФИООтв Фамилия="string" Имя="string" Отчество="string"/>
+    </ИдОтпр>
+    <КодНОПост>stri</КодНОПост>
+    <!--1 or more repetitions:-->
+    <Документ ИдДок="string">
+        <СвОргРег НаимОрг="string" ИННЮЛ="stringstri" КПП="stringstr" ОГРН="stringstrings"/>
+        <СвЗамВыд>
+            <ДатаПостНО>stringstri</ДатаПостНО>
+            <Выд_Зам_Утрат>
+                <!--You have a CHOICE of the next 2 items at this level-->
+                <Замена ПризнДок="s" ПричЗамДок="st" ДатаДокФакт="stringstri">
+                    <СведФЛ ДатаРожд="stringstri" МестоРожд="string" Пол="1" ПрАдрМЖ="s" КодКладр="string"
+                            АдрМЖРФТекст="string">
+                        <ФИОФЛ Фамилия="string" Имя="string" Отчество="string"/>
+                        <АдресМЖ КодРегион="st" Город="string" Район="string" НаселПункт="string" Улица="string"
+                                 Дом="string" Корпус="string" Кварт="string"/>
+                        <АдресМЖКЛАДР КодРегион="st" Город="string" Район="string" НаселПункт="string" Улица="string"
+                                      Дом="string" Корпус="string" Кварт="string"/>
+                    </СведФЛ>
+                    <ВыдДок КодВидДок="st" СерНомДок="string" ДатаУдЛичн="stringstri" КемВыдДок="string"
+                            КодПодрВыдДок="strings"/>
+                    <ЗамДок КодВидДок="st" СерНомДок="string" ДатаУдЛичн="stringstri" КемВыдДок="string"
+                            КодПодрВыдДок="strings"/>
+                    <!--Optional:-->
+                    <ЗамРекв ДатаРожд="stringstri" МестоРожд="string" Пол="1">
+                        <ФИОФЛ Фамилия="string" Имя="string" Отчество="string"/>
+                    </ЗамРекв>
+                </Замена>
+                <ПервВыдача ПризнДок="s" ПричВыдДок="st" ДатаДокФакт="stringstri">
+                    <СведФЛ ДатаРожд="stringstri" МестоРожд="string" Пол="1" ПрАдрМЖ="s" КодКладр="string"
+                            АдрМЖРФТекст="string">
+                        <ФИОФЛ Фамилия="string" Имя="string" Отчество="string"/>
+                        <АдресМЖ КодРегион="st" Город="string" Район="string" НаселПункт="string" Улица="string"
+                                 Дом="string" Корпус="string" Кварт="string"/>
+                        <АдресМЖКЛАДР КодРегион="st" Город="string" Район="string" НаселПункт="string" Улица="string"
+                                      Дом="string" Корпус="string" Кварт="string"/>
+                    </СведФЛ>
+                    <ВыдДок КодВидДок="st" СерНомДок="string" ДатаУдЛичн="stringstri" КемВыдДок="string"
+                            КодПодрВыдДок="strings"/>
+                    <УдЛичн КодВидДок="st" СерНомДок="string" ДатаУдЛичн="stringstri" КемВыдДок="string"
+                            КодПодрВыдДок="strings"/>
+                    <!--Optional:-->
+                    <ЗамРекв ДатаРожд="stringstri" МестоРожд="string" Пол="1">
+                        <ФИОФЛ Фамилия="string" Имя="string" Отчество="string"/>
+                    </ЗамРекв>
+                </ПервВыдача>
+            </Выд_Зам_Утрат>
+        </СвЗамВыд>
+    </Документ>
 </Файл>

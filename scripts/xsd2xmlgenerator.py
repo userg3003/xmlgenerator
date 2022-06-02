@@ -76,7 +76,10 @@ class Xsd2XmlGenerator:
 
     def get_value_for_attribute(self, node, node_type):
         self.all_types.add(node_type.local_name)
-        # print(f"node: {node.name} type: {node_type} ")
+        self.all_attr.add(f"{node.name} \t:\t {node_type}")
+        value = self.fake_attribute(node.name)
+        if value is not None:
+            return value
         pattern = node_type.facets.get("{http://www.w3.org/2001/XMLSchema}pattern", False)
         if pattern:
             regexps = pattern.regexps[0]
@@ -93,3 +96,48 @@ class Xsd2XmlGenerator:
             else:
                 value = str(random.randrange(100, 10000))
         return value
+
+    def fake_attribute(self, node_name):
+        if node_name == "Фамилия":
+            value = self.fake.last_name()
+            return value
+        if node_name == "Отчество":
+            value = self.fake.middle_name()
+            return value
+        if node_name == "Имя":
+            value = self.fake.first_name()
+            return value
+        if node_name == "Город":
+            value = self.fake.city_name()
+            return value
+        if node_name == "Тлф":
+            value = self.fake.phone_number()
+            return value
+        if node_name == "Район":
+            value = self.fake.city()
+            return value
+        if node_name == "Улица":
+            value = self.fake.street_name()
+            return value
+        if node_name == "Дом":
+            value = self.fake.building_number()
+            return value
+        if node_name == "Корпус":
+            value = self.fake.building_number()
+            return value
+        if node_name == "Кварт":
+            value = self.fake.building_number()
+            return value
+        if node_name == "ДолжОтв":
+            value = self.fake.job()
+            return value
+        if node_name == "МестоРожд":
+            value = f"{self.fake.administrative_unit()}, {self.fake.city()}"
+            return value
+        if node_name == "E-mail":
+            value = self.fake.email()
+            return value
+        if node_name == "НаселПункт":
+            value = self.fake.city()
+            return value
+        return None

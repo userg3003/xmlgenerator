@@ -1,6 +1,6 @@
 СПДУЛТип
+gYearMonth
 gYear
 boolean
-ДатаТип
-gYearMonth
 ОКСМТип
+ДатаТип

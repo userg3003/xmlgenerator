@@ -16,9 +16,10 @@ def main(src_dir, dst_dir, file):
         out = "\n".join([f"{t}" for t in generator.all_types if t is not None])
         f.write(out)
 
-    # with open(f"{path}{f_name}_attr.txt", "wt") as f:
-    #     out = "\n".join([f"{t}" for t in generator.all_attr if t is not None])
-    #     f.write(out)
+    attr_file = dst_dir.joinpath(f"{file}_attr.txt").resolve()
+    with open(attr_file, "wt") as f:
+        out = "\n".join([f"{t}" for t in generator.all_attr if t is not None])
+        f.write(out)
 
 
 if __name__ == "__main__":
