@@ -1,0 +1,11 @@
+<rules dataset="002_1">
+    <field root="/Файл/Документ/СодПерСвед/СвФЛ/УдЛичнФЛ" name="ndul" title="Нормализованный паспорт">
+        <part from="@КодВидДок">
+            <filter digits="true"/>
+            <format_number length="2"/>
+        </part>
+        <part from="@СерНомДок">
+            <trim spaces="true" hyphens="true"/>
+        </part>
+    </field>
+</rules>

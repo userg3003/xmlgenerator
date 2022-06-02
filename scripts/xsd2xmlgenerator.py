@@ -1,25 +1,19 @@
 import random
 from xml.etree import ElementTree
+from faker import Faker
+from faker.providers import date_time, internet, lorem, person, python
 
 import xmlschema
 import rstr
 
 
-def get_value_for_attribute(node_type):
-    if node_type.local_name == "EAN" or node_type.local_name == "INN":
-        ean_file = open(f'resources/{node_type.local_name}.txt', 'r')
-        lines = ean_file.readlines()
-        return str(int(lines[random.randrange(0, len(lines))]))
-    else:
-        value = list(node_type.facets.values())[0]
-        if hasattr(value, "regexps"):
-            regexps = list(node_type.facets.values())[0].regexps
-            value = ''
-            while value == '':
-                value = rstr.xeger(regexps[0])
-            return value
-        else:
-            return str(random.randrange(100, 10000))
+def make_fake():
+    fake = Faker("ru_RU")
+    fake.add_provider(person)
+    fake.add_provider(internet)
+    fake.add_provider(python)
+    fake.add_provider(date_time)
+    return fake
 
 
 def get_random_value():
@@ -31,11 +25,17 @@ class Xsd2XmlGenerator:
     def __init__(self, xsd_path):
         self.schema = xmlschema.XMLSchema(xsd_path)
         self.root = None
+        self.cur_birthday = None
+        self.cur_fio = None
+        self.all_types = set()
+        self.all_attr = set()
+        self.fake = make_fake()
 
     def generate(self):
         # идем по всем рутовым элементам
         for xsd_node in self.schema.root_elements:
             self.root = ElementTree.Element(xsd_node.local_name)
+            # print(f"-------------- {xsd_node.local_name} =============== ")
             self._recur_func(xsd_node=xsd_node, xml_node=self.root, is_root=True)
 
     def _recur_func(self, xsd_node, xml_node, is_root=False):
@@ -44,7 +44,7 @@ class Xsd2XmlGenerator:
 
         # simple content
         if xsd_node.type.is_simple():
-            xml_node.text = self.get_value_for_attribute(xsd_node.type)
+            xml_node.text = self.get_value_for_attribute(xsd_node, xsd_node.type)
         # complex types
         else:
             group = xsd_node.type.content._group
@@ -63,7 +63,7 @@ class Xsd2XmlGenerator:
 
         # attributes
         for attr, attr_obj in xsd_node.attributes.items():
-            xml_node.attrib[attr] = self.get_value_for_attribute(attr_obj.type)
+            xml_node.attrib[attr] = self.get_value_for_attribute(attr_obj, attr_obj.type)
 
     def write(self, xml_path) -> None:
         tree = ElementTree.ElementTree(self.root)
@@ -74,19 +74,22 @@ class Xsd2XmlGenerator:
         self.schema.validate(xml_path)
         print(xml_path + " validates = " + str(self.schema.is_valid(xml_path)))
 
-    def get_value_for_attribute(self, node_type):
-        if node_type.local_name == "EAN" or node_type.local_name == "INN":
-            ean_file = open(f'resources/{node_type.local_name}.txt', 'r')
-            lines = ean_file.readlines()
-            return str(int(lines[random.randrange(0, len(lines))]))
+    def get_value_for_attribute(self, node, node_type):
+        self.all_types.add(node_type.local_name)
+        # print(f"node: {node.name} type: {node_type} ")
+        pattern = node_type.facets.get("{http://www.w3.org/2001/XMLSchema}pattern", False)
+        if pattern:
+            regexps = pattern.regexps[0]
+            value = ''
+            while value == '':
+                value = rstr.xeger(regexps)
+            if node.name == "ДатаРожд":
+                self.cur_birthday = value
         else:
-            value = list(node_type.facets.values())[0]
-            if hasattr(value, "regexps"):
-                regexps = list(node_type.facets.values())[0].regexps
-                value = ''
-                while value == '':
-                    value = rstr.xeger(regexps[0])
-                return value
+            if node.name == "ГодРожд":
+                value = self.cur_birthday[-4:]
+            elif node.name == "МесГодРожд":
+                value = self.cur_birthday[-7:]
             else:
-                return str(random.randrange(100, 10000))
-
+                value = str(random.randrange(100, 10000))
+        return value

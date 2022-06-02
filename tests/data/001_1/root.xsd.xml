@@ -1,0 +1,30 @@
+<Файл ИдСвед="string" ДатаСвед="stringstri" Отправитель="МВД" ТипИнф="ВЫДУДЛИЧН" ВерсФорм="1.0.0" ТипВыгр="1" КолДок="100">
+  <!--1 or more repetitions:-->
+  <Документ ИдДок="string" ТипДок="3" ИнцНом="string">
+    <!--1 or more repetitions:-->
+    <СведДокФЛ ИдГИСМУ="string" ИдЕРН="stringstring" ПрАннул="true">
+      <!--1 or more repetitions:-->
+      <УдЛичнФЛ РеестрНом="string" ПризнакДок="5" КодВидДок="st" СерНомДок="string" ДатаДок="stringstri" ВыдДок="string" КодВыдДок="strings">
+        <СведФЛ Пол="1" МестоРожд="string" КодСтранРожд="str">
+          <!--You have a CHOICE of the next 3 items at this level-->
+          <ДатаРожд>stringstri</ДатаРожд>
+          <МесГодРожд>2008-11</МесГодРожд>
+          <ГодРожд>2017</ГодРожд>
+          <ФИО>
+            <!--You have a CHOICE of the next 2 items at this level-->
+            <Фамилия>string</Фамилия>
+            <ПрОтсФам>1</ПрОтсФам>
+            <!--You have a CHOICE of the next 2 items at this level-->
+            <Имя>string</Имя>
+            <ПрОтсИм>1</ПрОтсИм>
+            <!--You have a CHOICE of the next 2 items at this level-->
+            <Отчество>string</Отчество>
+            <ПрОтсОтч>1</ПрОтсОтч>
+          </ФИО>
+        </СведФЛ>
+      </УдЛичнФЛ>
+    </СведДокФЛ>
+    <!--Zero or more repetitions:-->
+    <АнСведДокФЛ ИдГИСМУ="string" ИдЕРН="stringstring"/>
+  </Документ>
+</Файл>

@@ -1,0 +1,6 @@
+ДатаТип
+СПДУЛТип
+ОКСМТип
+gYear
+boolean
+gYearMonth

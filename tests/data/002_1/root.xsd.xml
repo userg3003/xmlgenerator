@@ -1,0 +1,20 @@
+<Файл ИдФайл="string" ВерсФорм="4.01" ТипИнф="РЕГФЛМЖ_РФ" ВерсПрог="stringstring" КолДок="100">
+  <ИдОтпр ДолжОтв="string" Тлф="string" E-mail="string">
+    <ФИООтв Фамилия="string" Имя="string" Отчество="string"/>
+  </ИдОтпр>
+  <!--1 or more repetitions:-->
+  <Документ ИдДок="string">
+    <ОписПерСвед Наим_ФМС="string" ИНН_ФМС="stringstri" КПП_ФМС="stringstr" ОГРН_ФМС="stringstrings" Код_ФМС="strings" КодНОПол="stri" ДатаСвед="stringstri"/>
+    <СодПерСвед>
+      <СвФЛ Пол="1" ДатаРожд="stringstri" МестоРожд="string">
+        <ФИО Фамилия="string" Имя="string" Отчество="string"/>
+        <УдЛичнФЛ КодВидДок="st" СерНомДок="string" ДатаДок="stringstri" ВыдДок="string" КодВыдДок="strings"/>
+      </СвФЛ>
+      <СвРегМЖ ДатаПостУчет="stringstri" ДатаСнятУчет="stringstri" АдрМЖРФТекст="string">
+        <АдрМЖРФ КодРегион="st" Город="string" Район="string" НаселПункт="string" Улица="string" Дом="string" Корпус="string" Кварт="string"/>
+        <!--Optional:-->
+        <АдрМЖРФПр КодРегион="st" Город="string" Район="string" НаселПункт="string" Улица="string" Дом="string" Корпус="string" Кварт="string"/>
+      </СвРегМЖ>
+    </СодПерСвед>
+  </Документ>
+</Файл>
