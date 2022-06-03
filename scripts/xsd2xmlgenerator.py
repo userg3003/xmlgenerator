@@ -7,6 +7,8 @@ from faker.providers import date_time, internet, lorem, person, python
 import xmlschema
 import rstr
 
+from scripts.utils.fakers import Fakers
+
 random.seed()
 
 Faker.seed(random.randint(1, 100))
@@ -36,6 +38,7 @@ class Xsd2XmlGenerator:
         self.all_attr = set()
         self.fake = make_fake()
         self.count = count
+        self._faker = Fakers()
 
     def generate(self):
         # идем по всем рутовым элементам
@@ -97,49 +100,10 @@ class Xsd2XmlGenerator:
             if is_count:
                 value = str(self.count)
             else:
-                value = str(random.randrange(1, 1000))
+                value = self._faker.value(node_name)
             return value
-        if node_name == "Фамилия":
-            value = self.fake.last_name()
-            return value
-        if node_name == "Отчество":
-            value = self.fake.middle_name()
-            return value
-        if node_name == "Имя":
-            value = self.fake.first_name()
-            return value
-        if node_name == "Город":
-            value = self.fake.city_name()
-            return value
-        if node_name == "Тлф":
-            value = self.fake.phone_number()
-            return value
-        if node_name == "Район":
-            value = self.fake.city()
-            return value
-        if node_name == "Улица":
-            value = self.fake.street_name()
-            return value
-        if node_name == "Дом":
-            value = self.fake.building_number()
-            return value
-        if node_name == "Корпус":
-            value = self.fake.building_number()
-            return value
-        if node_name == "Кварт":
-            value = self.fake.building_number()
-            return value
-        if node_name == "ДолжОтв":
-            value = self.fake.job()
-            return value
-        if node_name == "МестоРожд":
-            value = f"{self.fake.administrative_unit()}, {self.fake.city()}"
-            return value
-        if node_name == "E-mail":
-            value = self.fake.email()
-            return value
-        if node_name == "НаселПункт":
-            value = self.fake.city()
+        value = self._faker.value(node_name)
+        if value is not None:
             return value
         pattern = node.type.facets.get("{http://www.w3.org/2001/XMLSchema}pattern", False)
         if pattern:
@@ -163,13 +127,16 @@ class Xsd2XmlGenerator:
                 local_type_name = node.type.base_type.local_name
             if local_type_name == "string":
                 length = node.type.max_length - 1 - len(node.name)
+                if length < 0:
+                    length = node.type.max_length
                 if length >= 10:
                     length = random.randint(10, length)
                     text = self.fake.text(max_nb_chars=length)
                 else:
                     text = self.fake.word()[:length]
-                value = f"{node.name} {text}"
+                value = f"{node.name} {text}"[:length]
+
 
             else:
-                value = "123"
+                value = "????"
         return value
