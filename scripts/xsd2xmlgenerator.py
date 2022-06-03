@@ -135,8 +135,8 @@ class Xsd2XmlGenerator:
                 else:
                     text = self.fake.word()[:length]
                 value = f"{node.name} {text}"[:length]
-
-
+            elif local_type_name == "boolean":
+                value = random.choice(["true", "false"])
             else:
                 value = "????"
         return value
