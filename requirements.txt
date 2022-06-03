@@ -1,3 +1,4 @@
 rstr
 xmlschema
 faker
+loguru

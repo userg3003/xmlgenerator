@@ -30,4 +30,7 @@
   <dt>-f FILE, --file FILE</dt>
     <dd>файл со схемой
     </dd>
+  <dt>-c COUNT, --count COUNT</dt>
+    <dd>Количество генерируемых документов. По умолчанию 1. 
+    </dd>
 </dl>

@@ -1,10 +1,15 @@
 import random
+from loguru import logger
 from xml.etree import ElementTree
 from faker import Faker
 from faker.providers import date_time, internet, lorem, person, python
 
 import xmlschema
 import rstr
+
+random.seed()
+
+Faker.seed(random.randint(1, 100))
 
 
 def make_fake():
@@ -22,7 +27,7 @@ def get_random_value():
 
 class Xsd2XmlGenerator:
 
-    def __init__(self, xsd_path):
+    def __init__(self, xsd_path, count):
         self.schema = xmlschema.XMLSchema(xsd_path)
         self.root = None
         self.cur_birthday = None
@@ -30,6 +35,7 @@ class Xsd2XmlGenerator:
         self.all_types = set()
         self.all_attr = set()
         self.fake = make_fake()
+        self.count = count
 
     def generate(self):
         # идем по всем рутовым элементам
@@ -50,7 +56,10 @@ class Xsd2XmlGenerator:
             group = xsd_node.type.content._group
             for sub_node in group:
                 if sub_node.occurs[1] is None:
-                    i = get_random_value()
+                    if sub_node.parent.parent.parent.parent is None:
+                        i = self.count
+                    else:
+                        i = get_random_value()
                 else:
                     i = 1
                 while i != 0:
@@ -77,27 +86,19 @@ class Xsd2XmlGenerator:
     def get_value_for_attribute(self, node, node_type):
         self.all_types.add(node_type.local_name)
         self.all_attr.add(f"{node.name} \t:\t {node_type}")
-        value = self.fake_attribute(node.name)
-        if value is not None:
-            return value
-        pattern = node_type.facets.get("{http://www.w3.org/2001/XMLSchema}pattern", False)
-        if pattern:
-            regexps = pattern.regexps[0]
-            value = ''
-            while value == '':
-                value = rstr.xeger(regexps)
-            if node.name == "ДатаРожд":
-                self.cur_birthday = value
-        else:
-            if node.name == "ГодРожд":
-                value = self.cur_birthday[-4:]
-            elif node.name == "МесГодРожд":
-                value = self.cur_birthday[-7:]
-            else:
-                value = str(random.randrange(100, 10000))
+        value = self.fake_attribute(node)
         return value
 
-    def fake_attribute(self, node_name):
+    def fake_attribute(self, node):
+        node_name = node.name
+        value = None
+        if node_name == "КолДок":
+            is_count = random.choice([True, False])
+            if is_count:
+                value = str(self.count)
+            else:
+                value = str(random.randrange(1, 1000))
+            return value
         if node_name == "Фамилия":
             value = self.fake.last_name()
             return value
@@ -140,4 +141,35 @@ class Xsd2XmlGenerator:
         if node_name == "НаселПункт":
             value = self.fake.city()
             return value
-        return None
+        pattern = node.type.facets.get("{http://www.w3.org/2001/XMLSchema}pattern", False)
+        if pattern:
+            regexps = pattern.regexps[0]
+            value = ''
+            while value == '':
+                value = rstr.xeger(regexps)
+            if node.name == "ДатаРожд":
+                self.cur_birthday = value
+        else:
+            if node.name == "ГодРожд":
+                value = self.cur_birthday[-4:]
+            elif node.name == "МесГодРожд":
+                value = self.cur_birthday[-7:]
+        if value is None:
+            local_type_name = node.type.local_name
+            if node.type.enumeration is not None:
+                value = self.fake.random_element(elements=node.type.enumeration)
+                return value
+            if local_type_name is None:
+                local_type_name = node.type.base_type.local_name
+            if local_type_name == "string":
+                length = node.type.max_length - 1 - len(node.name)
+                if length >= 10:
+                    length = random.randint(10, length)
+                    text = self.fake.text(max_nb_chars=length)
+                else:
+                    text = self.fake.word()[:length]
+                value = f"{node.name} {text}"
+
+            else:
+                value = "123"
+        return value

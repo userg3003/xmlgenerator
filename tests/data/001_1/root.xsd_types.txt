@@ -1,6 +1,6 @@
 СПДУЛТип
-gYearMonth
-gYear
-boolean
-ОКСМТип
 ДатаТип
+gYearMonth
+ОКСМТип
+boolean
+gYear
