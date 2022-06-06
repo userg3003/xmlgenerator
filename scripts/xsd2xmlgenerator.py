@@ -47,13 +47,13 @@ class Xsd2XmlGenerator:
             # print(f"-------------- {xsd_node.local_name} =============== ")
             self._recur_func(xsd_node=xsd_node, xml_node=self.root, is_root=True)
 
-    def _recur_func(self, xsd_node, xml_node, is_root=False):
+    def _recur_func(self, xsd_node, xml_node, is_root=False, fake_value=None):
         if not is_root:
             xml_node = ElementTree.SubElement(xml_node, xsd_node.local_name)
 
         # simple content
         if xsd_node.type.is_simple():
-            xml_node.text = self.get_value_for_attribute(xsd_node, xsd_node.type)
+            xml_node.text = self.get_value_for_attribute(xsd_node, xsd_node.type, fake_value)
         # complex types
         else:
             group = xsd_node.type.content._group
@@ -67,11 +67,23 @@ class Xsd2XmlGenerator:
                     i = 1
                 while i != 0:
                     i -= 1
+                    model = getattr(sub_node, "model", None);
                     if hasattr(sub_node, '_group'):
-                        for item_node in sub_node._group:
-                            self._recur_func(item_node, xml_node)
+                        fake_value = None
+                        selected_item = -1
+                        if model == 'choice':
+                            selected_item = -1
+                            index_pr_ots, item = self.get_pr_otsutsv(sub_node._group)
+                            if item is not None:
+                                selected_item = random.randint(0, len(sub_node._group) - 1)
+                                if index_pr_ots == selected_item:
+                                    fake_value = 1
+
+                        for ind, item_node in enumerate(sub_node._group):
+                            if ind == selected_item:
+                                self._recur_func(item_node, xml_node, is_root, fake_value)
                         continue
-                    self._recur_func(sub_node, xml_node)
+                    self._recur_func(sub_node, xml_node, False)
 
         # attributes
         for attr, attr_obj in xsd_node.attributes.items():
@@ -86,11 +98,20 @@ class Xsd2XmlGenerator:
         self.schema.validate(xml_path)
         print(xml_path + " validates = " + str(self.schema.is_valid(xml_path)))
 
-    def get_value_for_attribute(self, node, node_type):
+    def get_value_for_attribute(self, node, node_type, fake_value=None):
         self.all_types.add(node_type.local_name)
         self.all_attr.add(f"{node.name} \t:\t {node_type}")
-        value = self.fake_attribute(node)
+        if fake_value is None:
+            value = self.fake_attribute(node)
+        else:
+            value = str(fake_value)
         return value
+
+    def get_pr_otsutsv(self, group):
+        for i, item in enumerate(group):
+            if "ПрОтс" in item.name:
+                return i, item
+        return -1, None
 
     def fake_attribute(self, node):
         node_name = node.name
