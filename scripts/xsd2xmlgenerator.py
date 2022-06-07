@@ -56,7 +56,8 @@ class Xsd2XmlGenerator:
             xml_node.text = self.get_value_for_attribute(xsd_node, xsd_node.type, fake_value)
         # complex types
         else:
-            group = xsd_node.type.content._group
+            logger.debug(f"{xsd_node.type}  {xsd_node.type.content}")
+            group = getattr(xsd_node.type.content, "_group", [])
             for sub_node in group:
                 if sub_node.occurs[1] is None:
                     if sub_node.parent.parent.parent.parent is None:
