@@ -23,7 +23,24 @@ logger.add(path_file, level=log_level, serialize=serialize, format=fmt)
 # logger.add(sys.stderr, level=log_level, serialize=serialize, format=fmt)
 
 
-def main(src_dir, dst_dir, file, count=1):
+def main(src_dir, dst_dir, file, count=1, recurs=False):
+    if recurs:
+        scan_dirs(count, src_dir)
+    else:
+        generate_xml(count, dst_dir, file, src_dir)
+
+
+def scan_dirs(count, src_dir):
+    # [x for x in src_dir.iterdir() if x.is_dir()]
+    all_xsd = list(src_dir.glob('**/*.xsd'))
+    logger.debug(f"ll: {all_xsd}")
+    for file in all_xsd:
+        file_name=file.name
+        path=file.parent
+        generate_xml(count, path, file_name, path)
+
+
+def generate_xml(count, dst_dir, file, src_dir):
     f_name = src_dir.joinpath(file).resolve()
     generator = Xsd2XmlGenerator(xsd_path=f_name, count=count)
     generator.generate()
@@ -33,7 +50,6 @@ def main(src_dir, dst_dir, file, count=1):
     with open(types_file, "wt") as f:
         out = "\n".join([f"{t}" for t in generator.all_types if t is not None])
         f.write(out)
-
     attr_file = dst_dir.joinpath(f"{file}_attr.txt").resolve()
     with open(attr_file, "wt") as f:
         out = "\n".join([f"{t}" for t in generator.all_attr if t is not None])
@@ -57,38 +73,54 @@ if __name__ == "__main__":
         help="папка для результата (по умолчанию совпадает с исходной), при отсутствии папки, она будет создана."
     )
     parser.add_argument(
-        '-f', '--file', required=True,
+        '-f', '--file', required=False,
         help="файл со схемой", type=str
     )
     parser.add_argument(
         '-с', '--count', required=False, default=1,
         help="Количество генерируемых документов", type=int
     )
+    # parser.add_argument(
+    #     '-r', '--recurs', dest='now', action='store_true', required=False, default=True,
+    #     help="Генерация всех xsd во вложенных папках", type=int
+    # )
+    parser.add_argument('-r', dest='recursive_dirs', action='store_true', required=False,
+                        help="Генерация всех xsd во вложенных папках.")
     args = parser.parse_args()
 
-    if args.srcdir is not None:
-        src_dir = Path(args.srcdir).resolve()
+    dst_dir = None
+    if args.recursive_dirs:
+        if args.srcdir is not None:
+            src_dir = Path(args.srcdir).resolve()
+            assert src_dir.is_dir(), 'Папка с исходными файлами не найдена!'
+        else:
+            print('Не задана папка  со схемами!')
+            sys.exit(1)
     else:
-        os.chdir(Path(__file__).parent.parent)
-        src_dir = Path('tests/data')
-    assert src_dir.is_dir(), 'Папка с исходными файлами не найдена!'
 
-    if args.targetdir is not None:
-        dst_dir = Path(args.targetdir).resolve()
-    else:
-        dst_dir = Path(args.srcdir).resolve()
+        if args.srcdir is not None:
+            src_dir = Path(args.srcdir).resolve()
+        else:
+            os.chdir(Path(__file__).parent.parent)
+            src_dir = Path('tests/data')
+        assert src_dir.is_dir(), 'Папка с исходными файлами не найдена!'
 
-    if not dst_dir.is_dir():
-        dst_dir.mkdir(exist_ok=True)
+        if args.targetdir is not None:
+            dst_dir = Path(args.targetdir).resolve()
+        else:
+            dst_dir = Path(args.srcdir).resolve()
 
-    if args.file is not None:
-        file = Path(args.srcdir).joinpath(args.file).resolve()
-    else:
-        print('Не задан файл со схемой!')
-        sys.exit(1)
+        if not dst_dir.is_dir():
+            dst_dir.mkdir(exist_ok=True)
 
-    if not file.is_file():
-        print(f'Не задан файл со схемой: {file}!')
-        sys.exit(2)
+        if args.file is not None:
+            file = Path(args.srcdir).joinpath(args.file).resolve()
+        else:
+            print('Не задан файл со схемой!')
+            sys.exit(1)
 
-    main(src_dir, dst_dir, args.file, args.count)
+        if not file.is_file():
+            print(f'Не задан файл со схемой: {file}!')
+            sys.exit(2)
+
+    main(src_dir, dst_dir, args.file, args.count, args.recursive_dirs)
