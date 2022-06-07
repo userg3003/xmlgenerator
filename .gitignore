@@ -131,3 +131,4 @@ dmypy.json
 
 .idea/
 /logs/*.logs
+/data/schemes_300522/
