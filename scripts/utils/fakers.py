@@ -145,8 +145,31 @@ class BirthPlace(Faker):
 
     @property
     def value(self):
-        val = f"{Faker._fake.administrative_unit()}, {Faker._fake.city()}"
-        return val
+        return f"{Faker._fake.administrative_unit()}, {Faker._fake.city()}"
+
+
+class Year(Faker):
+    name: str = "Год"
+
+    @property
+    def value(self):
+        return Faker._fake.year()
+
+
+class Month(Faker):
+    name: str = "Месяц"
+
+    @property
+    def value(self):
+        return Faker._fake.month()
+
+
+class Day(Faker):
+    name: str = "День"
+
+    @property
+    def value(self):
+        return Faker._fake.day_of_month()
 
 
 class KolDok(Faker):
@@ -175,6 +198,9 @@ class Fakers:
         self.all_faker[Locality.name] = Locality()
         self.all_faker[BirthPlace.name] = BirthPlace()
         self.all_faker[KolDok.name] = Email()
+        self.all_faker[Month.name] = Month()
+        self.all_faker[Day.name] = Day()
+        self.all_faker[Year.name] = Year()
 
     def value(self, name):
         if name in self.all_faker.keys():

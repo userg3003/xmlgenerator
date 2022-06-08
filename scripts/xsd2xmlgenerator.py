@@ -44,19 +44,25 @@ class Xsd2XmlGenerator:
     def generate(self):
         # идем по всем рутовым элементам
         for xsd_node in self.schema.root_elements:
+            logger.debug(f" start node")
             self.root = ElementTree.Element(xsd_node.local_name)
             # print(f"-------------- {xsd_node.local_name} =============== ")
             self._recur_func(xsd_node=xsd_node, xml_node=self.root, is_root=True)
+            logger.debug(f" --------------- stop node")
 
     def _recur_func(self, xsd_node, xml_node, is_root=False, fake_value=None):
+        logger.debug(f" ---------------             iter node")
         if not is_root:
             xml_node = ElementTree.SubElement(xml_node, xsd_node.local_name)
 
+        logger.debug(f"")
         # simple content
         if xsd_node.type.is_simple():
+            logger.debug(f"")
             xml_node.text = self.get_value_for_attribute(xsd_node, xsd_node.type, fake_value)
         # complex types
         else:
+            logger.debug(f"")
             # logger.debug(f"{xsd_node.type}  {xsd_node.type.content}")
             group = getattr(xsd_node.type.content, "_group", [])
             for sub_node in group:
@@ -86,27 +92,37 @@ class Xsd2XmlGenerator:
                                 self._recur_func(item_node, xml_node, is_root, fake_value)
                         continue
                     self._recur_func(sub_node, xml_node, False)
+        logger.debug(f"")
 
         # attributes
         for attr, attr_obj in xsd_node.attributes.items():
             xml_node.attrib[attr] = self.get_value_for_attribute(attr_obj, attr_obj.type)
+        logger.debug(f"")
 
     def write(self, xml_path) -> None:
+        if self.root is None:
+            logger.error(f"Пустой root.")
+            return
         tree = ElementTree.ElementTree(self.root)
         tree.write(xml_path, encoding="utf-8", xml_declaration=True)
-        print("Generate " + xml_path + " \nDone!!!")
+        print("Сгенерирован " + xml_path + " \nOk!!!")
 
     def validate(self, xml_path):
         self.schema.validate(xml_path)
         print(xml_path + " validates = " + str(self.schema.is_valid(xml_path)))
 
     def get_value_for_attribute(self, node, node_type, fake_value=None):
+        logger.debug(f"")
         self.all_types.add(node_type.local_name)
         self.all_attr.add(f"{node.name} \t:\t {node_type}")
+        logger.debug(f"")
         if fake_value is None:
+            logger.debug(f"")
             value = self.fake_attribute(node)
         else:
+            logger.debug(f"")
             value = str(fake_value)
+        logger.debug(f"")
         return value
 
     def get_pr_otsutsv(self, group):
@@ -116,6 +132,8 @@ class Xsd2XmlGenerator:
         return -1, None
 
     def fake_attribute(self, node):
+        logger.debug(f"node: {node.name}  {node} ")
+        attr_type = self.parse_type(node.type, node.name)
         node_name = node.name
         value = None
         if node_name == "КолДок":
@@ -146,7 +164,7 @@ class Xsd2XmlGenerator:
             if node.type.enumeration is not None:
                 value = self.fake.random_element(elements=node.type.enumeration)
                 return value
-            all_types = self.parse_type(node.type)
+            all_types = self.parse_type(node.type, node.name)
             if isinstance(all_types, list):
                 value = self.generate_value(all_types, node.name)
                 return value
@@ -159,8 +177,15 @@ class Xsd2XmlGenerator:
         return value
 
     def generate_value(self, types, node_name):
+        if node_name in self._faker.all_faker.keys():
+            value = self._faker[node_name].value
+            return value
         value = ""
-        index = random.randint(0, len(types) - 1)
+        index = 0
+        if len(types) > 2:
+            index = random.randint(0, len(types) - 1)
+        elif len(types) == 2:
+            index = 1
 
         if types[index]['type_name'] == "string":
             if types[index]['max_length'] == 0:
@@ -175,25 +200,58 @@ class Xsd2XmlGenerator:
                 text = self.fake.word()[:length]
             value = f"{node_name} {text}"[:length]
         elif types[index]['type_name'] == "decimal":
+            # logger.debug(f"types[index]: {types[index]}")
             fractionDigits = 0
-            if types[index]['fractionDigits'] is not None:
-                all_digits = types[index]['totalDigits'] - types[index]['fractionDigits']
+            totalDigits = 0
+            if "totalDigits" in types[index].keys():
+                totalDigits = types[index]['totalDigits']
+            if "fractionDigits" in types[index].keys() and types[index]['fractionDigits'] is not None:
+                all_digits = totalDigits - types[index]['fractionDigits']
                 fractionDigits = str(
                     self.fake.random_number(digits=types[index]['fractionDigits'], fix_len=False))
             else:
-                all_digits = types[index]['totalDigits']
+                all_digits = totalDigits
             value = str(self.fake.random_number(digits=all_digits, fix_len=True))
             value = value[0:random.randint(1, all_digits)]
-            if types[index]['fractionDigits'] is not None:
+            if "fractionDigits" in types[index].keys() is not None:
                 value = f"{value}.{fractionDigits}"
         elif types[index]['type_name'] == "boolean":
             logger.debug(f"boolean types[index] {types[index]}")
             value = random.choice(["true", "false"])
+        elif types[index]['type_name'] == "double":
+            value = str(random.randint(types[index]['minInclusive'], types[index]['maxInclusive']))
+            # logger.debug(f"double types[index] {types[index]} value: {value}")
+        elif types[index]['type_name'] == "integer":
+            max_value = None
+            min_value = 0
+            if "totalDigits" in types[index].keys():
+                value = str(self.fake.random_number(digits=types[index]['totalDigits'], fix_len=True))
+            else:
+                if "max_value" in types[index].keys():
+                    max_value = types[index]['max_value']
+                if "min_value" in types[index].keys():
+                    min_value = types[index]['min_value']
+                if max_value is None:
+                    value = self.fake.random_int(min=min_value)
+                else:
+                    value = self.fake.random_int(min=min_value, max=max_value)
+            return str(value)
+            # logger.debug(f"double types[index] {types[index]} value: {value}")
+        else:
+            value = ""
+            if types[index]['patterns']:
+                # regexps = types[index]['patterns'].regexps[0]
+                regexps = types[index]['patterns'].patterns[0].pattern
+                while value == '':
+                    value = rstr.xeger(regexps)
+                value = str(value)
+            else:
+                logger.debug(f"type not defined {types[index]['type_name']}")
 
         return value
 
     @staticmethod
-    def parse_type(node_type):
+    def parse_type(node_type, node_name):
         if isinstance(node_type, XsdUnion):
             node_types = list()
             for member_type in node_type.member_types:
@@ -209,6 +267,11 @@ class Xsd2XmlGenerator:
                     "maxLength": Xsd2XmlGenerator.getValueFromFacet(member_type.facets, "maxLength"),
                     "patterns": member_type.patterns
                 }
+                all_facets_types = [item.split("}")[1] for item in member_type.facets]
+                # logger.debug(f"all_facets_types: {all_facets_types}")
+                for attr in all_facets_types:
+                    type_[attr] = Xsd2XmlGenerator.getValueFromFacet(member_type.facets, attr)
+
                 if member_type.patterns is not None:
                     logger.debug(f"patterns: {member_type.patterns}")
                 node_types.append(type_)
@@ -216,12 +279,65 @@ class Xsd2XmlGenerator:
 
         local_type_name = getattr(node_type, "local_name")
         if local_type_name is not None:
-            logger.debug(f"local_type_name from node.type: {local_type_name}")
             return local_type_name
         local_type_name = getattr(node_type.base_type, "local_name")
+        if local_type_name == "string":
+            all_facets_types = [item.split("}")[1] for item in node_type.facets]
+            type_ = {"type_name": "string"}
+            for attr in all_facets_types:
+                type_[attr] = Xsd2XmlGenerator.getValueFromFacet(node_type.facets, attr)
+            type_["max_length"] = node_type.max_length
+            type_["min_length"] = node_type.min_length
+            type_["max_value"] = node_type.max_value
+            type_["min_value"] = node_type.min_value
+            return [type_]
+        if local_type_name == "double":
+            all_facets_types = [item.split("}")[1] for item in node_type.facets]
+            type_ = {"type_name": "double"}
+            for attr in all_facets_types:
+                type_[attr] = Xsd2XmlGenerator.getValueFromFacet(node_type.facets, attr)
+            type_["max_length"] = node_type.max_length
+            type_["min_length"] = node_type.min_length
+            type_["max_value"] = node_type.max_value
+            type_["min_value"] = node_type.min_value
+            # type_["patterns"] = node_type.patterns
+            return [type_]
+        if local_type_name == "integer":
+            all_facets_types = [item.split("}")[1] for item in node_type.facets]
+            type_ = {"type_name": "integer"}
+            for attr in all_facets_types:
+                type_[attr] = Xsd2XmlGenerator.getValueFromFacet(node_type.facets, attr)
+            type_["max_length"] = node_type.max_length
+            type_["min_length"] = node_type.min_length
+            type_["max_value"] = node_type.max_value
+            type_["min_value"] = node_type.min_value
+            type_["patterns"] = node_type.patterns
+            return [type_]
+        if local_type_name == "decimal":
+            all_facets_types = [item.split("}")[1] for item in node_type.facets]
+            type_ = {"type_name": "decimal"}
+            for attr in all_facets_types:
+                type_[attr] = Xsd2XmlGenerator.getValueFromFacet(node_type.facets, attr)
+            type_["max_length"] = node_type.max_length
+            type_["min_length"] = node_type.min_length
+            type_["max_value"] = node_type.max_value
+            type_["min_value"] = node_type.min_value
+            type_["patterns"] = node_type.patterns
+            return [type_]
         if local_type_name is None:
             logger.debug(f"local_type_name from node.base_type: {local_type_name}")
             return local_type_name
+        if local_type_name is not None:
+            all_facets_types = [item.split("}")[1] for item in node_type.facets]
+            type_ = {"type_name": local_type_name}
+            for attr in all_facets_types:
+                type_[attr] = Xsd2XmlGenerator.getValueFromFacet(node_type.facets, attr)
+            type_["max_length"] = node_type.max_length
+            type_["min_length"] = node_type.min_length
+            type_["max_value"] = node_type.max_value
+            type_["min_value"] = node_type.min_value
+            type_["patterns"] = node_type.patterns
+            return [type_]
         logger.debug(f"NodeType not defined")
         return None
 

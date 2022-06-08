@@ -23,34 +23,47 @@ logger.add(path_file, level=log_level, serialize=serialize, format=fmt)
 # logger.add(sys.stderr, level=log_level, serialize=serialize, format=fmt)
 
 
-def main(src_dir, dst_dir, file, count=1, recurs=False):
+def main(src_dir_, dst_dir_, file_, count=1, recurs=False):
     if recurs:
-        scan_dirs(count, src_dir)
+        scan_dirs(count, src_dir_)
     else:
-        generate_xml(count, dst_dir, file, src_dir)
+        generate_xml(count, dst_dir_, file_, src_dir_)
 
 
-def scan_dirs(count, src_dir):
-    # [x for x in src_dir.iterdir() if x.is_dir()]
-    all_xsd = list(src_dir.glob('**/*.xsd'))
+def scan_dirs(count, src_dir_):
+    all_xsd = list(src_dir_.glob('**/*.xsd'))
     logger.debug(f"ll: {all_xsd}")
-    for file in all_xsd:
-        file_name=file.name
-        path=file.parent
+    for i, file_ in enumerate(all_xsd):
+        if file_.suffix != ".xsd":
+            continue
+        if "csv" in file_.name:
+            logger.warning(f"Не обработан файл {file_}")
+            continue
+        if "types" in file_.name:
+            logger.warning(f"Не обработан файл {file_}")
+            continue
+        logger.debug(f"START ({i+1}/{len(all_xsd)}): {file_}")
+        file_name = file_.name
+        path = file_.parent
         generate_xml(count, path, file_name, path)
 
 
-def generate_xml(count, dst_dir, file, src_dir):
-    f_name = src_dir.joinpath(file).resolve()
-    generator = Xsd2XmlGenerator(xsd_path=f_name, count=count)
-    generator.generate()
-    out_file = str(dst_dir.joinpath(f"{file}_generated.xml").resolve())
+def generate_xml(count, dst_dir_, file_, src_dir_):
+    f_name = src_dir_.joinpath(file_).resolve()
+    try:
+        generator = Xsd2XmlGenerator(xsd_path=f_name, count=count)
+        # generator.validate(str(f_name))
+        generator.generate()
+    except Exception as err:
+        logger.error(f"ERR: {err}")
+        return
+    out_file = str(dst_dir_.joinpath(f"{file_}_generated.xml").resolve())
     generator.write(xml_path=out_file)
-    types_file = dst_dir.joinpath(f"{file}_types.txt").resolve()
+    types_file = dst_dir_.joinpath(f"{file_}_types.txt").resolve()
     with open(types_file, "wt") as f:
         out = "\n".join([f"{t}" for t in generator.all_types if t is not None])
         f.write(out)
-    attr_file = dst_dir.joinpath(f"{file}_attr.txt").resolve()
+    attr_file = dst_dir_.joinpath(f"{file_}_attr.txt").resolve()
     with open(attr_file, "wt") as f:
         out = "\n".join([f"{t}" for t in generator.all_attr if t is not None])
         f.write(out)
@@ -60,7 +73,6 @@ if __name__ == "__main__":
     import argparse
     import os
     import sys
-    import subprocess
     from pathlib import Path
 
     parser = argparse.ArgumentParser(description="Генерация xml из xsd")
