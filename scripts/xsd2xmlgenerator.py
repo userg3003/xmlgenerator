@@ -47,7 +47,7 @@ class Xsd2XmlGenerator:
         for xsd_node in self.schema.root_elements:
             logger.debug(f" start node")
             self.root = ElementTree.Element(xsd_node.local_name)
-            print(f"-------------- {xsd_node.local_name} =============== ")
+            print(f"-------------- {xsd_node.local_name} =============== {self.schema.filepath}")
             self._recur_func(xsd_node=xsd_node, xml_node=self.root, is_root=True)
             logger.debug(f" --------------- stop node")
 
@@ -206,9 +206,9 @@ class Xsd2XmlGenerator:
             index = 1
 
         if types[index]['type_name'] == "string":
-            if types[index]['max_length'] == 0:
+            if 'max_length' in types[index].keys() and types[index]['max_length'] == 0:
                 return ""
-            length = types[index]['max_length'] - 1 - len(node_name)
+            length = types[index]['max_length'] - 1 - len(node_name) if  'max_length' in types[index].keys() else 50
             if length < 0:
                 length = types[index]['max_length']
             if length >= 10:
@@ -279,7 +279,7 @@ class Xsd2XmlGenerator:
                     value = rstr.xeger(regexps)
                 value = str(value)
             else:
-                logger.debug(f"type not defined {types[index]['type_name']}")
+                logger.warning(f"type not defined {types[index]['type_name']}")
 
         return value
 
@@ -308,7 +308,7 @@ class Xsd2XmlGenerator:
                     type_[attr] = Xsd2XmlGenerator.getValueFromFacet(member_type.facets, attr)
 
                 if member_type.patterns is not None:
-                    logger.debug(f"patterns: {member_type.patterns}")
+                    logger.warning(f"patterns: {member_type.patterns}")
                 node_types.append(type_)
             logger.debug(f"node: {node_name}  {node_type} ")
             return node_types
