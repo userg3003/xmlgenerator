@@ -132,3 +132,6 @@ dmypy.json
 .idea/
 /logs/*.logs
 /data/schemes_300522/
+/data/schemes_300522_/
+/data/schemes_300522_1/
+/data/schemes_300522_err/
