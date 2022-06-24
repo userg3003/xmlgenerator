@@ -208,7 +208,7 @@ class Xsd2XmlGenerator:
         if types[index]['type_name'] == "string":
             if 'max_length' in types[index].keys() and types[index]['max_length'] == 0:
                 return ""
-            length = types[index]['max_length'] - 1 - len(node_name) if  'max_length' in types[index].keys() else 50
+            length = types[index]['max_length'] - 1 - len(node_name) if 'max_length' in types[index].keys() else 50
             if length < 0:
                 length = types[index]['max_length']
             if length >= 10:
@@ -272,7 +272,7 @@ class Xsd2XmlGenerator:
             return str(value)
         else:
             value = ""
-            if types[index]['patterns']:
+            if "patterns" in types[index].keys() and types[index]['patterns']:
                 # regexps = types[index]['patterns'].regexps[0]
                 regexps = types[index]['patterns'].patterns[0].pattern
                 while value == '':
@@ -280,6 +280,7 @@ class Xsd2XmlGenerator:
                 value = str(value)
             else:
                 logger.warning(f"type not defined {types[index]['type_name']}")
+                value = f"{node_name} {types[index]['type_name']}"
 
         return value
 

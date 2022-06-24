@@ -32,7 +32,7 @@ def main(src_dir_, dst_dir_, file_, count=1, recurs=False):
 
 def scan_dirs(count, src_dir_):
     all_xsd = list(src_dir_.glob('**/*.xsd'))
-    logger.debug(f"ll: {all_xsd}")
+    #  logger.debug(f"ll: {all_xsd}")
     for i, file_ in enumerate(all_xsd):
         if file_.suffix != ".xsd":
             continue
@@ -42,7 +42,7 @@ def scan_dirs(count, src_dir_):
         if "types" in file_.name:
             logger.warning(f"Не обработан файл {file_}")
             continue
-        logger.debug(f"START ({i+1}/{len(all_xsd)}): {file_}")
+        #  logger.debug(f"START ({i+1}/{len(all_xsd)}): {file_}")
         file_name = file_.name
         path = file_.parent
         generate_xml(count, path, file_name, path)
