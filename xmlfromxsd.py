@@ -32,7 +32,7 @@ def main(src_dir_, dst_dir_, file_, count=1, recurs=False):
 
 def scan_dirs(count, src_dir_):
     all_xsd = list(src_dir_.glob('**/*.xsd'))
-    logger.debug(f"ll: {all_xsd}")
+    # logger.debug(f"ll: {all_xsd}")
     for i, file_ in enumerate(all_xsd):
         if file_.suffix != ".xsd":
             continue
@@ -42,7 +42,7 @@ def scan_dirs(count, src_dir_):
         if "types" in file_.name:
             logger.warning(f"Не обработан файл {file_}")
             continue
-        logger.debug(f"START ({i+1}/{len(all_xsd)}): {file_}")
+        # logger.debug(f"START ({i+1}/{len(all_xsd)}): {file_}")
         file_name = file_.name
         path = file_.parent
         generate_xml(count, path, file_name, path)
@@ -55,7 +55,7 @@ def generate_xml(count, dst_dir_, file_, src_dir_):
         # generator.validate(str(f_name))
         generator.generate()
     except Exception as err:
-        logger.error(f"ERR: {err}")
+        logger.error(f"ERR: {err}   f_name: {f_name}")
         return
     out_file = str(dst_dir_.joinpath(f"{file_}_generated.xml").resolve())
     generator.write(xml_path=out_file)
