@@ -1,3 +1,4 @@
+import sys
 from loguru import logger
 from pathlib import Path
 import uuid
@@ -13,14 +14,13 @@ d = date.today().strftime('%Y%m%d')
 t = strftime("%H%M%S", localtime())
 log_file_name = f"xmlgenerator_{d}_{t}.logs"
 log_level = "DEBUG"
+log_level_file = "DEBUG"
 serialize = True
 path_file = src_path.joinpath("logs").joinpath(log_file_name)
 fmt = "{time} | {level: <8} | {name: ^15} | {function: ^15} | {line: >3} | {message}"
 
-logger.add(path_file, level=log_level, serialize=serialize, format=fmt)
-
-
-# logger.add(sys.stderr, level=log_level, serialize=serialize, format=fmt)
+logger.add(path_file, level=log_level_file, serialize=serialize, format=fmt)
+logger.add(sys.stderr, level=log_level)
 
 
 def main(src_dir_, dst_dir_, file_, count=1, recurs=False):
@@ -32,7 +32,7 @@ def main(src_dir_, dst_dir_, file_, count=1, recurs=False):
 
 def scan_dirs(count, src_dir_):
     all_xsd = list(src_dir_.glob('**/*.xsd'))
-    #  logger.debug(f"ll: {all_xsd}")
+    logger.trace(f"ll: {all_xsd}")
     for i, file_ in enumerate(all_xsd):
         if file_.suffix != ".xsd":
             continue
@@ -42,7 +42,7 @@ def scan_dirs(count, src_dir_):
         if "types" in file_.name:
             logger.warning(f"Не обработан файл {file_}")
             continue
-        #  logger.debug(f"START ({i+1}/{len(all_xsd)}): {file_}")
+        logger.trace(f"START ({i+1}/{len(all_xsd)}): {file_}")
         file_name = file_.name
         path = file_.parent
         generate_xml(count, path, file_name, path)

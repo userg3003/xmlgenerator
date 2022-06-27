@@ -45,25 +45,25 @@ class Xsd2XmlGenerator:
     def generate(self):
         # идем по всем рутовым элементам
         for xsd_node in self.schema.root_elements:
-            #  logger.debug(f" start node")
+            logger.trace(f" start node")
             self.root = ElementTree.Element(xsd_node.local_name)
             print(f"-------------- {xsd_node.local_name} =============== {self.schema.filepath}")
             self._recur_func(xsd_node=xsd_node, xml_node=self.root, is_root=True)
-            #  logger.debug(f" --------------- stop node")
+            logger.trace(f" --------------- stop node")
 
     def _recur_func(self, xsd_node, xml_node, is_root=False, fake_value=None):
-        #  logger.debug(f" ---------------             iter node")
+        logger.trace(f" ---------------             iter node")
         if not is_root:
             xml_node = ElementTree.SubElement(xml_node, xsd_node.local_name)
 
-        #  logger.debug(f"xsd_node.name: {xsd_node.name}")
+        logger.trace(f"xsd_node.name: {xsd_node.name}")
         # simple content
         if xsd_node.type.is_simple():
-            #  logger.debug(f"")
+            logger.trace(f"")
             xml_node.text = self.get_value_for_attribute(xsd_node, xsd_node.type, fake_value)
         # complex types
         else:
-            #  logger.debug(f"{xsd_node.name}  {xsd_node.type}  {xsd_node.type.content}")
+            logger.trace(f"{xsd_node.name}  {xsd_node.type}  {xsd_node.type.content}")
             group = getattr(xsd_node.type.content, "_group", [])
             for sub_node in group:
                 if sub_node.occurs[1] is None:
@@ -92,14 +92,14 @@ class Xsd2XmlGenerator:
                                 self._recur_func(item_node, xml_node, is_root, fake_value)
                         continue
                     self._recur_func(sub_node, xml_node, False)
-        #  logger.debug(f"")
+        logger.trace(f"")
 
         # attributes
         for attr, attr_obj in xsd_node.attributes.items():
-            #  logger.debug(f"attr: {attr}")
+            logger.trace(f"attr: {attr}")
             xml_node.attrib[attr] = self.get_value_for_attribute(attr_obj, attr_obj.type)
-            #  logger.debug(f"xml_node.attrib[attr]: {xml_node.attrib[attr]}")
-        #  logger.debug(f"")
+            logger.trace(f"xml_node.attrib[attr]: {xml_node.attrib[attr]}")
+        logger.trace(f"")
 
     def write(self, xml_path) -> None:
         if self.root is None:
@@ -114,17 +114,17 @@ class Xsd2XmlGenerator:
         print(xml_path + " validates = " + str(self.schema.is_valid(xml_path)))
 
     def get_value_for_attribute(self, node, node_type, fake_value=None):
-        #  logger.debug(f"node.name: {node.name}")
+        logger.trace(f"node.name: {node.name}")
         self.all_types.add(node_type.local_name)
         self.all_attr.add(f"{node.name} \t:\t {node_type}")
-        #  logger.debug(f"")
+        logger.trace(f"")
         if fake_value is None:
-            #  logger.debug(f"")
+            logger.trace(f"")
             value = self.fake_attribute(node)
         else:
-            #  logger.debug(f"")
+            logger.trace(f"")
             value = str(fake_value)
-        #  logger.debug(f"")
+        logger.trace(f"")
         return value
 
     def get_pr_otsutsv(self, group):
@@ -134,21 +134,21 @@ class Xsd2XmlGenerator:
         return -1, None
 
     def fake_attribute(self, node):
-        #  logger.debug(f"node: {node.name}  {node} ")
+        logger.trace(f"node: {node.name}  {node} ")
         node_name = node.name
         value = None
         if node_name == "КолДок":
             value = str(self.count)
             return value
-        #  logger.debug(f"node: {node.name}  {node} ")
+        logger.trace(f"node: {node.name}  {node} ")
         value = self._faker.value(node_name)
-        #  logger.debug(f"node: {node.name}  {node} value: {value}")
+        logger.trace(f"node: {node.name}  {node} value: {value}")
         if value is not None:
             return value
         pattern = node.type.facets.get("{http://www.w3.org/2001/XMLSchema}pattern", False)
-        #  logger.debug(f"node: {node.name}  {node} ")
+        logger.trace(f"node: {node.name}  {node} ")
         if pattern:
-            #  logger.debug(f"node: {node.name}  {node} ")
+            logger.trace(f"node: {node.name}  {node} ")
             value = ''
             for pattern in pattern.regexps:
                 value = rstr.xeger(pattern)
@@ -158,27 +158,27 @@ class Xsd2XmlGenerator:
             if node.name == "ДатаРожд":
                 self.cur_birthday = value
         else:
-            #  logger.debug(f"node: {node.name}  {node} ")
+            logger.trace(f"node: {node.name}  {node} ")
             if node.name == "ГодРожд":
                 value = self.cur_birthday[-4:] if self.cur_birthday is not None else f"{self.fake.year()}"
             elif node.name == "МесГодРожд":
                 value = self.cur_birthday[
                         -7:] if self.cur_birthday is not None else f"{self.fake.month()}.{self.fake.year()}"
-        #  logger.debug(f"node: {node.name}  {node} ")
+        logger.trace(f"node: {node.name}  {node} ")
         if value is None:
-            #  logger.debug(f"node: {node.name}  {node} ")
+            logger.trace(f"node: {node.name}  {node} ")
             if node.type.enumeration is not None:
-                #  logger.debug(f"node: {node.name}  {node} ")
+                logger.trace(f"node: {node.name}  {node} ")
                 value = self.fake.random_element(elements=node.type.enumeration)
-                #  logger.debug(f"node: {node.name}  {node} ")
+                logger.trace(f"node: {node.name}  {node} ")
                 return value
-            #  logger.debug(f"node: {node.name}  {node} ")
+            logger.trace(f"node: {node.name}  {node} ")
             all_types = self.parse_type(node.type, node.name)
-            #  logger.debug(f"node: {node.name}  {node} ")
+            logger.trace(f"node: {node.name}  {node} ")
             if isinstance(all_types, list):
-                #  logger.debug(f"node: {node.name}  {node} ")
+                logger.trace(f"node: {node.name}  {node} ")
                 value = self.generate_value(all_types, node.name)
-                #  logger.debug(f"node: {node.name}  {node} ")
+                logger.trace(f"node: {node.name}  {node} ")
                 return value
 
             type_name = all_types
@@ -186,11 +186,11 @@ class Xsd2XmlGenerator:
                 value = random.choice(["true", "false"])
             else:
                 value = "????"
-        #  logger.debug(f"node: {node.name}  {node} value: {value}")
+        logger.trace(f"node: {node.name}  {node} value: {value}")
         return value
 
     def generate_value(self, types, node_name):
-        #  logger.debug(f"node_name: {node_name}  types: {types}")
+        logger.trace(f"node_name: {node_name}  types: {types}")
         if node_name in self._faker.all_faker.keys():
             value = self._faker[node_name].value
             return value
@@ -205,47 +205,51 @@ class Xsd2XmlGenerator:
             if 'max_length' in types[index].keys() and types[index]['max_length'] == 0:
                 return ""
 
-            if node_name == "ВерсПрог":
-                logger.debug(f" ВерсПрог ypes[index] {types[index]}")
+            logger.trace(f" {node_name} types[index] {types[index]}")
             if types[index]['max_length'] == types[index]['min_length']:
+                logger.trace(f" {node_name} types[index] {types[index]}")
                 length = types[index]['min_length']
-                if node_name == "ВерсПрог":
-                    logger.debug(f" ВерсПрог length {length}")
+                # !  logger.trace(f" {node_name} length {length}")
             else:
-                length = types[index]['max_length'] - 1 - len(node_name) if 'max_length' in types[index].keys() else 50
-                # logger.debug(f"types[index]['max_length']: {types[index]['max_length']}  len: {len(value)} \n {value}")
-                if node_name == "ВерсПрог":
-                    logger.debug(f" ВерсПрог length {length}")
+                logger.trace(f" {node_name} types[index] {types[index]}")
+                if ('min_length' in types[index].keys() and types[index]['min_length'] is None) or 'min_length' not in \
+                        types[index].keys():
+                    logger.trace(f" {node_name} types[index] {types[index]}")
+                    types[index]['min_length'] = 1
+                    logger.trace(f" {node_name} types[index] {types[index]}")
+                logger.trace(f" {node_name} types[index] {types[index]}")
+
+                length = random.randint(types[index]['min_length'], types[index]['max_length'])
+            logger.trace(f"types[index]['max_length']: {types[index]['max_length']}  len: {len(value)} \n {value}")
+            logger.trace(f" {node_name} length {length}")
 
             if length < 0:
                 length = types[index]['max_length']
-                if node_name == "ВерсПрог":
-                    logger.debug(f" ВерсПрог length {length}")
+                logger.trace(f" {node_name} length {length}")
+
+            if length == 0:
+                return ""
             if length >= 10 and types[index]['max_length'] != types[index]['min_length']:
-                length = random.randint(10, length)
                 text = self.fake.text(max_nb_chars=length)
-                if node_name == "ВерсПрог":
-                    logger.debug(f" ВерсПрог length {length}")
+                logger.trace(f" {node_name} length {length}")
             else:
                 text = self.fake.word()[:length]
-                if node_name == "ВерсПрог":
-                    logger.debug(f" ВерсПрог length {length}   text:|{text}| len: {len(text)}")
-                if text[-1] == " ":
-                    text[-1] = "q"
+                logger.trace(f" {node_name} length {length}   text:|{text}| len: {len(text)}")
                 if len(text) < length:
-                    text *= 2
-                if node_name == "ВерсПрог":
-                    logger.debug(f" ВерсПрог length {length}   text:|{text}| len: {len(text)}")
+                    text *= 10
+                logger.trace(f" {node_name} length {length}   text:|{text}| len: {len(text)}")
 
-                if node_name == "ВерсПрог":
-                    logger.debug(f" ВерсПрог length {length}")
-            if node_name == "ВерсПрог":
-                logger.debug(f" ВерсПрог length {length}   text:|{text}|")
+            logger.trace(f" {node_name} length {length}   text:|{text}|")
             value = f"{node_name} {text}"[:length]
-            if node_name == "ВерсПрог":
-                logger.debug(f"types[index]['max_length']: {types[index]['max_length']}  len: {len(value)} \n {value}")
+            logger.trace(f" {node_name} length {length}   text:|{text}|")
+            if value[-1] == " ":
+                logger.trace(f" {node_name} length {length}   text:|{text}|")
+                value = value[:-1] + "q"
+                logger.trace(f" {node_name} length {length}   text:|{text}|")
+            logger.trace(f"types[index]['max_length']: {types[index]['max_length']}  len: {len(value)} \n {value}")
+
         elif types[index]['type_name'] == "decimal":
-            #  logger.debug(f"types[index]: {types[index]}")
+            logger.trace(f"types[index]: {types[index]}")
             fraction_digits = 0
             total_digits = 0
             if "totalDigits" in types[index].keys():
@@ -261,11 +265,11 @@ class Xsd2XmlGenerator:
             if "fractionDigits" in types[index].keys() is not None:
                 value = f"{value}.{fraction_digits}"
         elif types[index]['type_name'] == "boolean":
-            #  logger.debug(f"boolean types[index] {types[index]}")
+            logger.trace(f"boolean types[index] {types[index]}")
             value = random.choice(["true", "false"])
         elif types[index]['type_name'] == "double":
             value = str(random.randint(types[index]['minInclusive'], types[index]['maxInclusive']))
-            #  logger.debug(f"double types[index] {types[index]} value: {value}")
+            logger.trace(f"double types[index] {types[index]} value: {value}")
         elif types[index]['type_name'] == "integer" or types[index]['type_name'] == "int":
             max_value = None
             min_value = 0
@@ -281,7 +285,6 @@ class Xsd2XmlGenerator:
                 else:
                     value = self.fake.random_int(min=min_value, max=max_value)
             return str(value)
-            #  logger.debug(f"double types[index] {types[index]} value: {value}")
         elif types[index]['type_name'] == "short":
             max_value = None
             min_value = 0
@@ -309,13 +312,14 @@ class Xsd2XmlGenerator:
                 logger.warning(f"type not defined {types[index]['type_name']}")
                 value = f"{node_name} {types[index]['type_name']}"
 
+        logger.trace(f"------------- node_name {node_name} len: {len(value)} \n {value}")
         return value
 
     @staticmethod
     def parse_type(node_type, node_name):
-        #  logger.debug(f"node: {node_name}  {node_type} ")
+        logger.trace(f"node: {node_name}  {node_type} ")
         if isinstance(node_type, XsdUnion):
-            #  logger.debug(f"node: {node_name}  {node_type} ")
+            logger.trace(f"node: {node_name}  {node_type} ")
             node_types = list()
             for member_type in node_type.member_types:
                 type_ = {
@@ -327,25 +331,39 @@ class Xsd2XmlGenerator:
                     "patterns": member_type.patterns
                 }
                 all_facets_types = [item.split("}")[1] for item in member_type.facets if item is not None]
-                #  logger.debug(f"all_facets_types: {all_facets_types}")
+                logger.trace(f"all_facets_types: {all_facets_types}")
                 for attr in all_facets_types:
                     type_[attr] = Xsd2XmlGenerator.get_value_from_facet(member_type.facets, attr)
 
                 if member_type.patterns is not None:
                     logger.warning(f"patterns: {member_type.patterns}")
                 node_types.append(type_)
-            #  logger.debug(f"node: {node_name}  {node_type} ")
+            logger.trace(f"node: {node_name}  {node_type} ")
             return node_types
 
         local_type_name = getattr(node_type, "local_name")
-        #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+        logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
         if local_type_name is not None:
-            #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+            logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+            if local_type_name == "boolean":
+                type_name = local_type_name
+            else:
+                type_name = getattr(node_type.base_type, "local_name", "string")
+            logger.trace(f"========== node: {node_name}  {node_type}  type_name: {type_name}")
             all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
-            #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
-            type_ = {"type_name": local_type_name,
-                     "max_length": node_type.max_length,
-                     "min_length": node_type.min_length,
+            logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+            if node_type.max_length is None:
+                max_length = 50
+            else:
+                max_length = node_type.max_length
+            if node_type.min_length is None:
+                min_length = 1
+            else:
+                min_length = node_type.min_length
+            type_ = {"type_name_local": local_type_name,
+                     "type_name": type_name,
+                     "max_length": max_length,
+                     "min_length": min_length,
                      "max_value": node_type.max_value,
                      "min_value": node_type.min_value,
                      "patterns": node_type.patterns, }
@@ -355,26 +373,29 @@ class Xsd2XmlGenerator:
             # type_["max_value"] = node_type.max_value
             # type_["min_value"] = node_type.min_value
             # type_["patterns"] = node_type.patterns
-            #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+            logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
             for attr in all_facets_types:
-                #  logger.debug(f"node: {node_name}  {node_type}  attr: {attr}")
+                logger.trace(f"node: {node_name}  {node_type}  attr: {attr}")
                 type_[attr] = Xsd2XmlGenerator.get_value_from_facet(node_type.facets, attr)
-                #  logger.debug(f"node: {node_name}  {node_type}  type_[attr]: {type_[attr]}")
-            #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
-            return type_
+                logger.trace(f"node: {node_name}  {node_type}  type_[attr]: {type_[attr]}")
+            logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+            return [type_]
         local_type_name = getattr(node_type.base_type, "local_name")
-        #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+        logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
         if local_type_name == "string":
-            #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+            logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
             all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
             type_ = {"type_name": "string"}
             for attr in all_facets_types:
                 type_[attr] = Xsd2XmlGenerator.get_value_from_facet(node_type.facets, attr)
             Xsd2XmlGenerator.set_max_min(node_type, type_)
-            #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+            if "length" in type_.keys():
+                type_["min_length"] = type_["max_length"] = type_["length"]
+
+            logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
             return [type_]
         if local_type_name == "double":
-            #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+            logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
             all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
             type_ = {"type_name": "double"}
             for attr in all_facets_types:
@@ -383,22 +404,22 @@ class Xsd2XmlGenerator:
             type_["min_length"] = node_type.min_length
             type_["max_value"] = node_type.max_value
             type_["min_value"] = node_type.min_value
-            #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+            logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
             return [type_]
-        #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+        logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
         if local_type_name == "integer":
-            #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+            logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
             all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
             type_ = {"type_name": "integer"}
             for attr in all_facets_types:
                 type_[attr] = Xsd2XmlGenerator.get_value_from_facet(node_type.facets, attr)
-            #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+            logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
             Xsd2XmlGenerator.set_max_min(node_type, type_)
-            #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+            logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
             return [type_]
-        #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+        logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
         if local_type_name == "decimal":
-            #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+            logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
             all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
             type_ = {"type_name": "decimal"}
             for attr in all_facets_types:
@@ -414,32 +435,36 @@ class Xsd2XmlGenerator:
                 type_["min_value"] = float(node_type.min_value)
             if node_type.patterns is not None:
                 type_["patterns"] = node_type.patterns
-            #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+            logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
             return [type_]
-        #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+        logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
         if local_type_name is None:
-            #  logger.debug(f"local_type_name from node.base_type: {local_type_name}")
+            logger.trace(f"local_type_name from node.base_type: {local_type_name}")
             return local_type_name
-        #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+        logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
         if local_type_name is not None:
-            #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+            logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
             all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
             type_ = {"type_name": local_type_name}
             for attr in all_facets_types:
                 type_[attr] = Xsd2XmlGenerator.get_value_from_facet(node_type.facets, attr)
-            #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+            logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
             Xsd2XmlGenerator.set_max_min(node_type, type_)
-            #  logger.debug(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
+            logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
             return [type_]
-        #  logger.debug(f"NodeType not defined")
+        logger.trace(f"NodeType not defined")
         return None
 
     @staticmethod
     def set_max_min(node_type, type_):
         if node_type.max_length is not None:
             type_["max_length"] = node_type.max_length
+        else:
+            type_["max_length"] = 50
         if node_type.min_length is not None:
             type_["min_length"] = node_type.min_length
+        else:
+            type_["min_length"] = 0
         if node_type.max_value is not None:
             type_["max_value"] = node_type.max_value
         if node_type.min_value is not None:
