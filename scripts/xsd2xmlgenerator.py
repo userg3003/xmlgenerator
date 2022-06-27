@@ -288,6 +288,9 @@ class Xsd2XmlGenerator:
         elif types[index]['type_name'] == "date":
             value = self._faker.date_value(pattern='%Y-%m-%d')
             return str(value)
+        elif types[index]['type_name'] == "gYear":
+            value = self._faker.date_value(pattern='%Y')
+            return str(value)
         elif types[index]['type_name'] == "short":
             max_value = None
             min_value = 0
@@ -348,7 +351,7 @@ class Xsd2XmlGenerator:
         logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
         if local_type_name is not None:
             logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
-            if local_type_name == "boolean" or local_type_name == "date":
+            if local_type_name == "boolean" or local_type_name == "date" or local_type_name == "gYear":
                 type_name = local_type_name
             else:
                 type_name = getattr(node_type.base_type, "local_name", "string")
