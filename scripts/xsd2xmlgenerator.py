@@ -138,11 +138,7 @@ class Xsd2XmlGenerator:
         node_name = node.name
         value = None
         if node_name == "КолДок":
-            is_count = random.choice([True, False])
-            if is_count:
-                value = str(self.count)
-            else:
-                value = self._faker.value(node_name)
+            value = str(self.count)
             return value
         #  logger.debug(f"node: {node.name}  {node} ")
         value = self._faker.value(node_name)
@@ -186,7 +182,7 @@ class Xsd2XmlGenerator:
                 return value
 
             type_name = all_types
-            if type_name == "boolean":
+            if all_types['type_name'] == "boolean":
                 value = random.choice(["true", "false"])
             else:
                 value = "????"
@@ -208,15 +204,46 @@ class Xsd2XmlGenerator:
         if types[index]['type_name'] == "string":
             if 'max_length' in types[index].keys() and types[index]['max_length'] == 0:
                 return ""
-            length = types[index]['max_length'] - 1 - len(node_name) if 'max_length' in types[index].keys() else 50
+
+            if node_name == "ВерсПрог":
+                logger.debug(f" ВерсПрог ypes[index] {types[index]}")
+            if types[index]['max_length'] == types[index]['min_length']:
+                length = types[index]['min_length']
+                if node_name == "ВерсПрог":
+                    logger.debug(f" ВерсПрог length {length}")
+            else:
+                length = types[index]['max_length'] - 1 - len(node_name) if 'max_length' in types[index].keys() else 50
+                # logger.debug(f"types[index]['max_length']: {types[index]['max_length']}  len: {len(value)} \n {value}")
+                if node_name == "ВерсПрог":
+                    logger.debug(f" ВерсПрог length {length}")
+
             if length < 0:
                 length = types[index]['max_length']
-            if length >= 10:
+                if node_name == "ВерсПрог":
+                    logger.debug(f" ВерсПрог length {length}")
+            if length >= 10 and types[index]['max_length'] != types[index]['min_length']:
                 length = random.randint(10, length)
                 text = self.fake.text(max_nb_chars=length)
+                if node_name == "ВерсПрог":
+                    logger.debug(f" ВерсПрог length {length}")
             else:
                 text = self.fake.word()[:length]
+                if node_name == "ВерсПрог":
+                    logger.debug(f" ВерсПрог length {length}   text:|{text}| len: {len(text)}")
+                if text[-1] == " ":
+                    text[-1] = "q"
+                if len(text) < length:
+                    text *= 2
+                if node_name == "ВерсПрог":
+                    logger.debug(f" ВерсПрог length {length}   text:|{text}| len: {len(text)}")
+
+                if node_name == "ВерсПрог":
+                    logger.debug(f" ВерсПрог length {length}")
+            if node_name == "ВерсПрог":
+                logger.debug(f" ВерсПрог length {length}   text:|{text}|")
             value = f"{node_name} {text}"[:length]
+            if node_name == "ВерсПрог":
+                logger.debug(f"types[index]['max_length']: {types[index]['max_length']}  len: {len(value)} \n {value}")
         elif types[index]['type_name'] == "decimal":
             #  logger.debug(f"types[index]: {types[index]}")
             fraction_digits = 0
