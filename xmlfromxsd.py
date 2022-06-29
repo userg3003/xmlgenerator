@@ -13,7 +13,8 @@ src_path = Path.cwd()
 d = date.today().strftime('%Y%m%d')
 t = strftime("%H%M%S", localtime())
 log_file_name = f"xmlgenerator_{d}_{t}.logs"
-log_level = "DEBUG"
+log_level = "TRACE"
+# log_level = "DEBUG"
 log_level_file = "DEBUG"
 serialize = True
 path_file = src_path.joinpath("logs").joinpath(log_file_name)
@@ -51,7 +52,7 @@ def scan_dirs(count, src_dir_):
 def generate_xml(count, dst_dir_, file_, src_dir_):
     f_name = src_dir_.joinpath(file_).resolve()
     try:
-        generator = Xsd2XmlGenerator(xsd_path=f_name, count=count)
+        generator = Xsd2XmlGenerator(xsd_path=f_name, count=count, src_dir=src_dir_)
         # generator.validate(str(f_name))
         generator.generate()
     except Exception as err:

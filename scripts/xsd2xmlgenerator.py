@@ -5,9 +5,12 @@ from xml.etree import ElementTree
 from faker import Faker
 from faker.providers import date_time, internet, lorem, person, python
 
+import xml.etree.ElementTree as ET
+
 import xmlschema
 from xmlschema.validators import XsdUnion
 import rstr
+import re
 
 from scripts.utils.fakers import Fakers
 
@@ -31,8 +34,11 @@ def get_random_value():
 
 class Xsd2XmlGenerator:
 
-    def __init__(self, xsd_path, count):
+    def __init__(self, xsd_path, count, src_dir=None):
         self.schema = xmlschema.XMLSchema(xsd_path)
+        # f_rules = src_dir.joinpath("rules.xml")
+        # self.rules= ET.parse(f_rules) if f_rules.is_file() else None
+        # myroot =  self.rules.getroot()
         self.root = None
         self.cur_birthday = None
         self.cur_fio = None
@@ -61,6 +67,7 @@ class Xsd2XmlGenerator:
         if xsd_node.type.is_simple():
             logger.trace(f"")
             xml_node.text = self.get_value_for_attribute(xsd_node, xsd_node.type, fake_value)
+            logger.trace(f"xml_node.text: {xml_node.text}")
         # complex types
         else:
             logger.trace(f"{xsd_node.name}  {xsd_node.type}  {xsd_node.type.content}")
@@ -107,6 +114,7 @@ class Xsd2XmlGenerator:
             return
         tree = ElementTree.ElementTree(self.root)
         tree.write(xml_path, encoding="utf-8", xml_declaration=True)
+
         print("Сгенерирован " + xml_path + " \nOk!!!")
 
     def validate(self, xml_path):
@@ -124,7 +132,7 @@ class Xsd2XmlGenerator:
         else:
             logger.trace(f"")
             value = str(fake_value)
-        logger.trace(f"")
+        logger.trace(f"node.name: {node.name} value: {value}")
         return value
 
     def get_pr_otsutsv(self, group):
@@ -141,7 +149,7 @@ class Xsd2XmlGenerator:
             value = str(self.count)
             return value
         logger.trace(f"node: {node.name}  {node} ")
-        value = self._faker.value(node_name)
+        value = self._faker.value(node_name, node.type)
         logger.trace(f"node: {node.name}  {node} value: {value}")
         if value is not None:
             return value
@@ -149,11 +157,20 @@ class Xsd2XmlGenerator:
         logger.trace(f"node: {node.name}  {node} ")
         if pattern:
             logger.trace(f"node: {node.name}  {node} ")
+            all_types = self.parse_type(node.type, node.name)
             value = ''
             for pattern in pattern.regexps:
                 value = rstr.xeger(pattern)
+                length = None
+                if "length" in all_types[0].keys():
+                    length = all_types[0]['length']
+                elif "max_length" in all_types[0].keys() and "min_length" in all_types[0].keys():
+                    length = random.randint(all_types[0]['min_length'], all_types[0]['max_length'])
+                if length is not None:
+                    value = value[-length:]
+
                 if value != "":
-                    return value
+                    break
 
             if node.name == "ДатаРожд":
                 self.cur_birthday = value
@@ -186,14 +203,22 @@ class Xsd2XmlGenerator:
                 value = random.choice(["true", "false"])
             else:
                 value = "????"
-        logger.trace(f"node: {node.name}  {node} value: {value}")
+        # logger.trace(f"node: {node.name}  {node} value: {value}")
         return value
 
     def generate_value(self, types, node_name):
         logger.trace(f"node_name: {node_name}  types: {types}")
         if node_name in self._faker.all_faker.keys():
-            value = self._faker[node_name].value
+            logger.trace(f"node_name: {node_name}  types: {types} _faker.all_faker.keys() {self._faker.all_faker.keys()}")
+            try:
+                # value = self._faker[node_name].value
+                value = self._faker.value(node_name, types[0])
+            except Exception as err:
+                logger.trace(f"err: {err} node_name: {node_name}  types: {types} value {value}")
+
+            logger.trace(f"node_name: {node_name}  types: {types} value {value}")
             return value
+        logger.trace(f"node_name: {node_name}  types: {types}")
         value = ""
         index = 0
         if len(types) > 2:
@@ -449,6 +474,11 @@ class Xsd2XmlGenerator:
             return local_type_name
         logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
         if local_type_name is not None:
+            if local_type_name in ["СпецТип", "НомерАбонентТип"]:
+                tt = Xsd2XmlGenerator.parse_type(node_type.base_type, local_type_name)
+                logger.trace(f"! node: {node_name}  {node_type}  local_type_name: {local_type_name} tt: {tt}")
+                return tt
+
             logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
             all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
             type_ = {"type_name": local_type_name}
