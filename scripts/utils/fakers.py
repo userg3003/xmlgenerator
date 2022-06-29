@@ -11,7 +11,7 @@ from scripts.utils.types.integer_type import IntegerType, LongType, IntType
 from scripts.utils.types.decimal_type import DecimalType
 from scripts.utils.types.snils import SnilsType
 from scripts.utils.types.string_type import StringType
-from scripts.utils.types.data_type import DataType, DataTypeYmd
+from scripts.utils.types.data_type import DataType, DataYmdType, DataNType
 from scripts.utils.types.inn import InnFLType, InnYLType
 
 
@@ -45,7 +45,8 @@ class Fakers:
         self.all_types[StringType.name] = StringType()
         self.all_types[SnilsType.name] = SnilsType()
         self.all_types[DataType.name] = DataType()
-        self.all_types[DataTypeYmd.name] = DataTypeYmd()
+        self.all_types[DataYmdType.name] = DataYmdType()
+        self.all_types[DataNType.name] = DataNType()
         self.all_types[InnFLType.name] = InnFLType()
         self.all_types[InnYLType.name] = InnYLType()
 
@@ -54,7 +55,8 @@ class Fakers:
             f"name: {name}   node_type: {node_type} node_type.local_name {node_type.local_name if node_type is not None else None}")
         value = None
         if "Пр" not in name and 'Дата' in name and getattr(node_type, "local_name", None) not in ["date", 'ДатаТип',
-                                                                                                  'Дата_ГГГГММДД']:
+                                                                                                  'Дата_ГГГГММДД',
+                                                                                                  'ДатаНТип']:
             logger.trace(f"name: {name}   node_type: {node_type}")
             return self.date_value("%d.%m.%Y")
         elif name in self.all_faker.keys():
