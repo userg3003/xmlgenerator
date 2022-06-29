@@ -1,7 +1,11 @@
 from loguru import logger
 from datetime import date
-import random
-import scripts.utils as util
+from scripts.utils.attributes.attributes import Faker_
+from scripts.utils.attributes.misc import PhoneNumber, Job, Email, KolDok
+from scripts.utils.attributes.dates import Year, Month, Day
+from scripts.utils.attributes.position import CityName, Region, StreetName, BuildingNumber, BuildingHouse, Quarter, \
+    Locality, BirthPlace
+from scripts.utils.attributes.fio import LastName, FirstName, MiddleName
 from scripts.utils.types.number_abonent import NumberAbonentType
 from scripts.utils.types.integer_type import IntegerType, LongType, IntType
 from scripts.utils.types.decimal_type import DecimalType
@@ -9,171 +13,6 @@ from scripts.utils.types.snils import SnilsType
 from scripts.utils.types.string_type import StringType
 from scripts.utils.types.data_type import DataType
 from scripts.utils.types.inn import InnFLType, InnYLType
-
-
-class Faker_:
-    _fake = util.make_fake()
-
-    def __init__(self):
-        self._name = None
-        self._value = None
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def value(self):
-        return self._value
-
-
-class LastName(Faker_):
-    name: str = "Фамилия"
-
-    @property
-    def value(self):
-        return Faker_._fake.last_name()
-
-
-class FirstName(Faker_):
-    name: str = "Имя"
-
-    @property
-    def value(self):
-        return Faker_._fake.first_name()
-
-
-class MiddleName(Faker_):
-    name: str = "Отчество"
-
-    @property
-    def value(self):
-        return Faker_._fake.middle_name()
-
-
-class CityName(Faker_):
-    name: str = "Город"
-
-    @property
-    def value(self):
-        return Faker_._fake.city_name()
-
-
-class PhoneNumber(Faker_):
-    name: str = "Тлф"
-
-    @property
-    def value(self):
-        return Faker_._fake.phone_number()
-
-
-class Region(Faker_):
-    name: str = "Район"
-
-    @property
-    def value(self):
-        return Faker_._fake.city()
-
-
-#
-class StreetName(Faker_):
-    name: str = "Улица"
-
-    @property
-    def value(self):
-        return Faker_._fake.street_name()
-
-
-#
-class BuildingNumber(Faker_):
-    name: str = "Дом"
-
-    @property
-    def value(self):
-        return Faker_._fake.building_number()
-
-
-#
-class BuildingHouse(Faker_):
-    name: str = "Корпус"
-
-    @property
-    def value(self):
-        return Faker_._fake.building_number()
-
-
-#
-class Quarter(Faker_):
-    name: str = "Кварт"
-
-    @property
-    def value(self):
-        return Faker_._fake.building_number()
-
-
-#
-class Job(Faker_):
-    name: str = "ДолжОтв"
-
-    @property
-    def value(self):
-        return Faker_._fake.job()
-
-
-class Email(Faker_):
-    name: str = "E-mail"
-
-    @property
-    def value(self):
-        return Faker_._fake.email()
-
-
-class Locality(Faker_):
-    name: str = "НаселПункт"
-
-    @property
-    def value(self):
-        return Faker_._fake.city()
-
-
-class BirthPlace(Faker_):
-    name: str = "МестоРожд"
-
-    @property
-    def value(self):
-        return f"{Faker_._fake.administrative_unit()}, {Faker_._fake.city()}"
-
-
-class Year(Faker_):
-    name: str = "Год"
-
-    @property
-    def value(self):
-        return Faker_._fake.year()
-
-
-class Month(Faker_):
-    name: str = "Месяц"
-
-    @property
-    def value(self):
-        return Faker_._fake.month()
-
-
-class Day(Faker_):
-    name: str = "День"
-
-    @property
-    def value(self):
-        return Faker_._fake.day_of_month()
-
-
-class KolDok(Faker_):
-    name: str = "КолДок"
-
-    @property
-    def value(self):
-        return str(random.randrange(1, 1000))
 
 
 class Fakers:
@@ -212,22 +51,27 @@ class Fakers:
     def value(self, name, node_type=None):
         logger.trace(
             f"name: {name}   node_type: {node_type} node_type.local_name {node_type.local_name if node_type is not None else None}")
-        if name in self.all_faker.keys():
-            logger.trace(f"name: {name}   node_type: {node_type}")
-            return self.all_faker[name].value
-        elif node_type.local_name in self.all_types:
-            logger.trace(f"name: {name}   node_type: {node_type}")
-            return self.all_types[node_type.local_name].value(node_type)
-        elif 'Дата' in name and node_type.local_name == "string":
+        value = None
+        if "Пр" not in name and 'Дата' in name and getattr(node_type, "local_name", None) not in ["date", 'ДатаТип']:
             logger.trace(f"name: {name}   node_type: {node_type}")
             return self.date_value("%d.%m.%Y")
+        elif name in self.all_faker.keys():
+            logger.trace(f"name: {name}   node_type: {node_type}")
+            value =  self.all_faker[name].value
+        elif node_type.local_name in self.all_types:
+            logger.trace(f"name: {name}   node_type: {node_type}")
+            value =  self.all_types[node_type.local_name].value(node_type)
         elif getattr(node_type, "primitive_type", None) is not None and \
                 node_type.primitive_type.local_name in self.all_types and \
                 name in ['СрокДисквЛет', 'СрокДисквМес', 'СрокДисквДн', 'Отправитель', 'ИнвПрич',
-                         'Датазаключенияконтракта', 'Датаначала', 'Датаокончания', 'ИНН', 'ИндРейтинг', 'ДатаВыд']:
+                         'Датазаключенияконтракта', 'Датаначала', 'Датаокончания', 'ИНН', 'ИндРейтинг',
+                         'ИдЕРН', 'ДатаСвед', 'ПрПодп', 'Код', 'Тип', 'КПП']:
             logger.trace(f"name: {name}   node_type: {node_type}")
-            return self.all_types[node_type.primitive_type.local_name].value(node_type)
-        return None
+            value =  self.all_types[node_type.primitive_type.local_name].value(node_type)
+        elif "Пр" not in name and 'Дата' in name and getattr(node_type, "local_name", None) != "date":
+            logger.trace(f"name: {name}   node_type: {node_type}")
+            value =  self.date_value("%d.%m.%Y")
+        return value
 
     @staticmethod
     def date_value(pattern):

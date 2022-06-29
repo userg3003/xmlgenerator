@@ -210,11 +210,7 @@ class Xsd2XmlGenerator:
         logger.trace(f"node_name: {node_name}  types: {types}")
         if node_name in self._faker.all_faker.keys():
             logger.trace(f"node_name: {node_name}  types: {types} _faker.all_faker.keys() {self._faker.all_faker.keys()}")
-            try:
-                # value = self._faker[node_name].value
-                value = self._faker.value(node_name, types[0])
-            except Exception as err:
-                logger.trace(f"err: {err} node_name: {node_name}  types: {types} value {value}")
+            value = self._faker.value(node_name, types[0])
 
             logger.trace(f"node_name: {node_name}  types: {types} value {value}")
             return value

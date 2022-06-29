@@ -14,13 +14,13 @@ d = date.today().strftime('%Y%m%d')
 t = strftime("%H%M%S", localtime())
 log_file_name = f"xmlgenerator_{d}_{t}.logs"
 log_level = "TRACE"
-# log_level = "DEBUG"
+log_level = "DEBUG"
 log_level_file = "DEBUG"
 serialize = True
 path_file = src_path.joinpath("logs").joinpath(log_file_name)
 fmt = "{time} | {level: <8} | {name: ^15} | {function: ^15} | {line: >3} | {message}"
 
-logger.add(path_file, level=log_level_file, serialize=serialize, format=fmt)
+# logger.add(path_file, level=log_level_file, serialize=serialize, format=fmt)
 logger.add(sys.stderr, level=log_level)
 
 
