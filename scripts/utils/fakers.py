@@ -13,6 +13,9 @@ from scripts.utils.types.snils import SnilsType
 from scripts.utils.types.string_type import StringType
 from scripts.utils.types.data_type import DataType, DataYmdType, DataNType
 from scripts.utils.types.inn import InnFLType, InnYLType
+from scripts.utils.types.oksm import OKSMType
+from scripts.utils.types.test_type import TESTType
+
 
 
 class Fakers:
@@ -49,6 +52,8 @@ class Fakers:
         self.all_types[DataNType.name] = DataNType()
         self.all_types[InnFLType.name] = InnFLType()
         self.all_types[InnYLType.name] = InnYLType()
+        self.all_types[OKSMType.name] = OKSMType()
+        self.all_types[TESTType.name] = TESTType()
 
     def value(self, name, node_type=None):
         logger.trace(
@@ -71,7 +76,7 @@ class Fakers:
                          'Датазаключенияконтракта', 'Датаначала', 'Датаокончания', 'ИНН', 'ИндРейтинг',
                          'ИдЕРН', 'ДатаСвед', 'ПрПодп', 'Код', 'Тип', 'КПП', 'ДатаКонДискв',
                          'ДатаОсвоб', 'ДатаВСилу', 'ДатаАрест', 'ДатаЦиркРоз', 'ДатаИзменРоз', 'Индекс',
-                         'КодРегион']:
+                         'КодРегион', 'ДоляПроц']:
             logger.trace(f"name: {name}   node_type: {node_type}")
             value = self.all_types[node_type.primitive_type.local_name].value(node_type)
         elif "Пр" not in name and 'Дата' in name and getattr(node_type, "local_name", None) != "date":
