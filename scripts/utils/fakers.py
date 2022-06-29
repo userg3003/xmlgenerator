@@ -15,6 +15,7 @@ from scripts.utils.types.data_type import DataType, DataYmdType, DataNType
 from scripts.utils.types.inn import InnFLType, InnYLType
 from scripts.utils.types.oksm import OKSMType
 from scripts.utils.types.test_type import TESTType
+from scripts.utils.types.spdul import SPDULType, SPDULschType
 
 
 
@@ -54,6 +55,8 @@ class Fakers:
         self.all_types[InnYLType.name] = InnYLType()
         self.all_types[OKSMType.name] = OKSMType()
         self.all_types[TESTType.name] = TESTType()
+        self.all_types[SPDULType.name] = SPDULType()
+        self.all_types[SPDULschType.name] = SPDULschType()
 
     def value(self, name, node_type=None):
         logger.trace(
@@ -70,6 +73,9 @@ class Fakers:
         elif node_type.local_name in self.all_types:
             logger.trace(f"name: {name}   node_type: {node_type}")
             value = self.all_types[node_type.local_name].value(node_type)
+        elif getattr(node_type.base_type, "name", None)  in self.all_types:
+            logger.trace(f"name: {name}   node_type.base_type.name: {node_type.base_type.name}")
+            value = self.all_types[node_type.base_type.name].value(node_type)
         elif getattr(node_type, "primitive_type", None) is not None and \
                 node_type.primitive_type.local_name in self.all_types and \
                 name in ['СрокДисквЛет', 'СрокДисквМес', 'СрокДисквДн', 'Отправитель', 'ИнвПрич',

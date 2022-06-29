@@ -470,7 +470,7 @@ class Xsd2XmlGenerator:
             return local_type_name
         logger.trace(f"node: {node_name}  {node_type}  local_type_name: {local_type_name}")
         if local_type_name is not None:
-            if local_type_name in ["СпецТип", "НомерАбонентТип"]:
+            if local_type_name in ["СпецТип", "НомерАбонентТип", 'СПДУЛТип']:
                 tt = Xsd2XmlGenerator.parse_type(node_type.base_type, local_type_name)
                 logger.trace(f"! node: {node_name}  {node_type}  local_type_name: {local_type_name} tt: {tt}")
                 return tt
