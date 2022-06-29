@@ -20,7 +20,7 @@ serialize = True
 path_file = src_path.joinpath("logs").joinpath(log_file_name)
 fmt = "{time} | {level: <8} | {name: ^15} | {function: ^15} | {line: >3} | {message}"
 
-# logger.add(path_file, level=log_level_file, serialize=serialize, format=fmt)
+logger.add(path_file, level=log_level_file, serialize=serialize, format=fmt)
 logger.add(sys.stderr, level=log_level)
 
 

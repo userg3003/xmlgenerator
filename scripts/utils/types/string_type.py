@@ -1,4 +1,5 @@
 import random
+import string
 import rstr
 from loguru import logger
 from scripts.utils.xml_utils import get_value_from_facet
@@ -27,13 +28,8 @@ class StringType():
 
         if all(element in all_facets_types for element in ['pattern']):
             value = rstr.xeger(type_['pattern'])
-            # if 'length' in type_.keys():
-            #     value=value[:type_['length']]
         if value is None and 'length' in type_.keys():
-            if type_['length'] >=5:
-                value = Fake_.text(max_nb_chars=type_['length']).replace(" ", "Q")
-            else:
-                value = Fake_.word()[:type_['length']]
+            value = ''.join(random.choices(string.ascii_letters, k=type_['length']))
 
 
         return value
