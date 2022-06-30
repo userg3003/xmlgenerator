@@ -19,7 +19,7 @@ from scripts.utils.types import Fake_
 class NumberAbonentType():
     name: str = "НомерАбонентТип"
 
-    def value(self, node_type):
+    def value(self, node_type, sync_attr=None):
         pref = Fake_.random_element(elements=('+7', '7', '8'))
         digits = Fake_.numerify(text="##########")
         value = f"{pref}{digits}"

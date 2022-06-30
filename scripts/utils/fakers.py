@@ -62,7 +62,7 @@ class Fakers:
         self.all_types[SPDULType.name] = SPDULType()
         self.all_types[SPDULschType.name] = SPDULschType()
 
-    def value(self, name, node_type=None):
+    def value(self, name, node_type=None, sync_attr=None):
         logger.trace(
             f"name: {name}   node_type: {node_type} node_type.local_name {node_type.local_name if node_type is not None else None}")
         value = None
@@ -73,13 +73,13 @@ class Fakers:
             return self.date_value("%d.%m.%Y")
         elif name in self.all_faker.keys():
             logger.trace(f"name: {name}   node_type: {node_type}")
-            value = self.all_faker[name].value
+            value = self.all_faker[name].value(node_type,sync_attr)
         elif node_type.local_name in self.all_types:
             logger.trace(f"name: {name}   node_type: {node_type}")
-            value = self.all_types[node_type.local_name].value(node_type)
+            value = self.all_types[node_type.local_name].value(node_type,sync_attr)
         elif getattr(node_type.base_type, "name", None)  in self.all_types:
             logger.trace(f"name: {name}   node_type.base_type.name: {node_type.base_type.name}")
-            value = self.all_types[node_type.base_type.name].value(node_type)
+            value = self.all_types[node_type.base_type.name].value(node_type,sync_attr)
         elif getattr(node_type, "primitive_type", None) is not None and \
                 node_type.primitive_type.local_name in self.all_types and \
                 name in ['СрокДисквЛет', 'СрокДисквМес', 'СрокДисквДн', 'Отправитель', 'ИнвПрич',
@@ -88,7 +88,7 @@ class Fakers:
                          'ДатаОсвоб', 'ДатаВСилу', 'ДатаАрест', 'ДатаЦиркРоз', 'ДатаИзменРоз', 'Индекс',
                          'КодРегион', 'ДоляПроц']:
             logger.trace(f"name: {name}   node_type: {node_type}")
-            value = self.all_types[node_type.primitive_type.local_name].value(node_type)
+            value = self.all_types[node_type.primitive_type.local_name].value(node_type,sync_attr)
         elif "Пр" not in name and 'Дата' in name and getattr(node_type, "local_name", None) != "date":
             logger.trace(f"name: {name}   node_type: {node_type}")
             value = self.date_value("%d.%m.%Y")

@@ -8,21 +8,23 @@ from scripts.utils.types import Fake_
 class InnYLType():
     name: str = "ИННЮЛТип"
 
-    def value(self, node_type):
-        value = get_inn(node_type)
-        logger.debug(f"{InnYLType.name} value: {value}")
+    def value(self, node_type, sync_attr=None):
+        value = get_inn(node_type, sync_attr)
+        logger.debug(f"{InnYLType.name} value: {value} param: {sync_attr}")
         return value
 
 
 class InnFLType():
     name: str = "ИННФЛТип"
 
-    def value(self, node_type):
-        value = get_inn(node_type)
-        logger.debug(f"{InnFLType.name} value: {value}")
+    def value(self, node_type, sync_attr=None):
+        value = get_inn(node_type, sync_attr)
+        logger.debug(f"{InnFLType.name} value: {value} param: {sync_attr}")
         return value
 
-def get_inn(node_type):
+
+def get_inn(node_type, param):
+    logger.debug(f"{node_type}  param: {param}")
     if node_type is None:
         return "ИНН ТИП None"
     all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
@@ -33,4 +35,5 @@ def get_inn(node_type):
     length = type_['maxLength'] if 'maxLength' in type_.keys() else length
     pattern = "#" * length
     value = Fake_.numerify(text=pattern)
+    value=format(param, f"0{length}d")
     return value

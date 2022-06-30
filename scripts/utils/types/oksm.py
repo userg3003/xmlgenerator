@@ -8,7 +8,7 @@ from scripts.utils.types import Fake_
 class OKSMType():
     name: str = "ОКСМТип"
 
-    def value(self, node_type):
+    def value(self, node_type, sync_attr=None):
         value = get_oksm(node_type)
         return value
 

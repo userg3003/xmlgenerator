@@ -12,8 +12,7 @@ class Faker_:
     def name(self):
         return self._name
 
-    @property
-    def value(self):
+    def value(self, node_type=None, param=None):
         return self._value
 
 

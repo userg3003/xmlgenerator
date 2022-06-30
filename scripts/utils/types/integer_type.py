@@ -12,7 +12,7 @@ from scripts.utils.types import Fake_
 class IntType():
     name: str = "int"
 
-    def value(self, node_type):
+    def value(self, node_type, sync_attr=None):
         value = get_value(node_type)
         return str(value)
 
@@ -29,7 +29,7 @@ def get_value(node_type):
 class IntegerType():
     name: str = "integer"
 
-    def value(self, node_type):
+    def value(self, node_type, sync_attr=None):
         value = get_value(node_type)
         return None #str(value)
 
@@ -37,6 +37,6 @@ class IntegerType():
 class LongType():
     name: str = "long"
 
-    def value(self, node_type):
+    def value(self, node_type, sync_attr=None):
         value = get_value(node_type)
         return None #str(value)

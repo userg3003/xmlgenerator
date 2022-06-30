@@ -8,7 +8,7 @@ from scripts.utils.types import Fake_
 class SnilsType():
     name: str = "СНИЛСТип"
 
-    def value(self, node_type):
+    def value(self, node_type, sync_attr=None):
         all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
         value = None
         type_ = dict()

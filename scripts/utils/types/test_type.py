@@ -8,7 +8,7 @@ from scripts.utils.types import Fake_
 class TESTType():
     name: str = "ТЕСТТип"
 
-    def value(self, node_type):
+    def value(self, node_type, sync_attr=None):
         all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
         type_ = dict()
         for attr in all_facets_types:
@@ -17,5 +17,3 @@ class TESTType():
         if all(element in all_facets_types for element in ['pattern']):
             value = rstr.xeger(type_['pattern'])
         return value
-
-

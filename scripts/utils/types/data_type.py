@@ -13,7 +13,7 @@ from scripts.utils.types import Fake_
 class DataType():
     name: str = "ДатаТип"
 
-    def value(self, node_type):
+    def value(self, node_type, sync_attr=None):
         all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
         value = None
         type_ = dict()
@@ -36,7 +36,7 @@ class DataType():
 class DataYmdType():
     name: str = "Дата_ГГГГММДД"
 
-    def value(self, node_type):
+    def value(self, node_type, sync_attr=None):
         all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
         value = None
         type_ = dict()
@@ -59,7 +59,7 @@ class DataYmdType():
 class DataNType():
     name: str = "ДатаНТип"
 
-    def value(self, node_type):
+    def value(self, node_type, sync_attr=None):
         all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
         value = None
         type_ = dict()

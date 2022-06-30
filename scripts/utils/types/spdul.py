@@ -9,7 +9,7 @@ from scripts.utils.types import Fake_
 class SPDULType():
     name: str = 'СПДУЛТип'
 
-    def value(self, node_type):
+    def value(self, node_type, sync_attr=None):
         all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
         all_facets_base_types = [item.split("}")[1] for item in node_type.base_type.facets if item is not None]
         base_type_ = dict()
@@ -46,7 +46,7 @@ class SPDULType():
 class SPDULschType():
     name: str = 'СПДУЛШТип'
 
-    def value(self, node_type):
+    def value(self, node_type, sync_attr=None):
         all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
         type_ = dict()
         for attr in all_facets_types:

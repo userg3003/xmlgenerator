@@ -63,7 +63,7 @@ def init_args():
         help="файл со схемой", type=str
     )
     parser.add_argument(
-        '-с', '--count', required=False, default=1,
+        '-c', '--count', required=False, default=1,
         help="Количество генерируемых документов", type=int
     )
     parser.add_argument(

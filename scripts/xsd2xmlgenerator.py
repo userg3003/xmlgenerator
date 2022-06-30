@@ -39,7 +39,9 @@ class Xsd2XmlGenerator:
         # f_rules = src_dir.joinpath("rules.xml")
         # self.rules= ET.parse(f_rules) if f_rules.is_file() else None
         # myroot =  self.rules.getroot()
-        self.sync_attr = sync_attr
+        self.sync_attr = sync_attr - 1
+        self.cur_sync_attr = None
+        self.name_document = None
         self.root = None
         self.cur_birthday = None
         self.cur_fio = None
@@ -49,15 +51,17 @@ class Xsd2XmlGenerator:
 
     def generate(self):
         # идем по всем рутовым элементам
+        logger.trace(f"sync_attr={self.sync_attr}   cur_sync_attr={self.cur_sync_attr}")
         for xsd_node in self.schema.root_elements:
-            logger.trace(f"{'-'*10} start node {'-'*10}")
+            logger.trace(f"{'-' * 10} start node {'-' * 10}")
             self.root = ElementTree.Element(xsd_node.local_name)
             logger.info(f"-------------- {xsd_node.local_name} =============== {self.schema.filepath}")
             self._recur_func(xsd_node=xsd_node, xml_node=self.root, is_root=True)
-            logger.trace(f"{'='*10} stop node {'='*10}")
+            logger.trace(f"{'=' * 10} stop node {'=' * 10}")
+        logger.trace(f"sync_attr={self.sync_attr}   cur_sync_attr={self.cur_sync_attr}")
 
     def _recur_func(self, xsd_node, xml_node, is_root=False, fake_value=None):
-        logger.trace(f"{'-'*20} iter node {'-'*20}")
+        logger.trace(f"{'-' * 20} iter node {'-' * 20}")
         if not is_root:
             xml_node = ElementTree.SubElement(xml_node, xsd_node.local_name)
 
@@ -66,7 +70,7 @@ class Xsd2XmlGenerator:
         if xsd_node.type.is_simple():
             logger.trace(f"")
             xml_node.text = self.get_value_for_attribute(xsd_node, xsd_node.type, fake_value)
-            logger.trace(f"xml_node.text: {xml_node.text}")
+            logger.trace(f"{' ' * 50}  simple xml_node.text: {xml_node.text}")
         # complex types
         else:
             logger.trace(f"{xsd_node.name}  {xsd_node.type}  {xsd_node.type.content}")
@@ -75,12 +79,22 @@ class Xsd2XmlGenerator:
                 if sub_node.occurs[1] is None:
                     if sub_node.parent.parent.parent.parent is None:
                         i = self.count
+                        self.name_document=sub_node.name
+
+                        logger.trace(
+                            f"{' ' * 50} Количество:  {i}   cur_sync_attr: {self.cur_sync_attr} {sub_node.name}")
                     else:
                         i = get_random_value()
                 else:
                     i = 1
                 while i != 0:
                     i -= 1
+                    logger.trace(f"{'%' * 10} i: {i}   cur_sync_attr: {self.cur_sync_attr}")
+                    if sub_node.name == self.name_document:  # sub_node.parent.parent.parent.parent is None:
+                    # if sub_node.occurs[1] is None and Xsd2XmlGenerator.is_document_node(
+                    #         sub_node):  # sub_node.parent.parent.parent.parent is None:
+                        self.cur_sync_attr = self.count - i + self.sync_attr
+                        logger.trace(f"{'%@' * 10} i: {i}   cur_sync_attr: {self.cur_sync_attr}")
                     model = getattr(sub_node, "model", None);
                     if hasattr(sub_node, '_group'):
                         fake_value = None
@@ -106,6 +120,15 @@ class Xsd2XmlGenerator:
             xml_node.attrib[attr] = self.get_value_for_attribute(attr_obj, attr_obj.type)
             logger.trace(f"xml_node.attrib[attr]: {xml_node.attrib[attr]}")
         logger.trace(f"")
+
+    @staticmethod
+    def is_document_node(node):
+        if node.parent is not None:
+            if node.parent.parent is not None:
+                if node.parent.parent.parent is not None:
+                    if node.parent.parent.parent.parent is not None:
+                        return True
+        return False
 
     def write(self, xml_path) -> None:
         if self.root is None:
@@ -144,8 +167,8 @@ class Xsd2XmlGenerator:
         if node_name == "КолДок":
             value = str(self.count)
             return value
-        logger.trace(f"node: {node.name}  {node} ")
-        value = self._faker.value(node_name, node.type)
+        logger.trace(f"node: {node.name}  {node} cur_sync_attr {self.cur_sync_attr}")
+        value = self._faker.value(node_name, node.type, self.cur_sync_attr)
         logger.trace(f"node: {node.name}  {node} value: {value}")
         if value is not None:
             return value
@@ -206,8 +229,8 @@ class Xsd2XmlGenerator:
         logger.trace(f"node_name: {node_name}  types: {types}")
         if node_name in self._faker.all_faker.keys():
             logger.trace(
-                f"node_name: {node_name}  types: {types} _faker.all_faker.keys() {self._faker.all_faker.keys()}")
-            value = self._faker.value(node_name, types[0])
+                f"node_name: {node_name}  types: {types} _faker.all_faker.keys() {self._faker.all_faker.keys()}  cur_sync_attr {self.cur_sync_attr}")
+            value = self._faker.value(node_name, types[0], self.cur_sync_attr)
 
             logger.trace(f"node_name: {node_name}  types: {types} value {value}")
             return value
