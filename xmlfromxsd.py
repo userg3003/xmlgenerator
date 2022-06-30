@@ -10,14 +10,14 @@ from scripts.xsd2xmlgenerator import Xsd2XmlGenerator
 xml_name = str(uuid.uuid4())
 
 
-def main(src_dir_, dst_dir_, file_, count=1, recurs=False):
+def main(src_dir_, dst_dir_, file_, count=1, recurs=False, sync_attr=1):
     if recurs:
-        scan_dirs(count, src_dir_)
+        scan_dirs(count, src_dir_, sync_attr)
     else:
-        generate_xml(count, dst_dir_, file_, src_dir_)
+        generate_xml(count, dst_dir_, file_, src_dir_, sync_attr)
 
 
-def scan_dirs(count, src_dir_):
+def scan_dirs(count, src_dir_, sync_attr):
     all_xsd = list(src_dir_.glob('**/*.xsd'))
     logger.trace(f"ll: {all_xsd}")
     for i, file_ in enumerate(all_xsd):
@@ -32,13 +32,13 @@ def scan_dirs(count, src_dir_):
         logger.trace(f"START ({i + 1}/{len(all_xsd)}): {file_}")
         file_name = file_.name
         path = file_.parent
-        generate_xml(count, path, file_name, path)
+        generate_xml(count, path, file_name, path, sync_attr)
 
 
-def generate_xml(count, dst_dir_, file_, src_dir_):
+def generate_xml(count, dst_dir_, file_, src_dir_, sync_attr):
     f_name = src_dir_.joinpath(file_).resolve()
     try:
-        generator = Xsd2XmlGenerator(xsd_path=f_name, count=count, src_dir=src_dir_)
+        generator = Xsd2XmlGenerator(xsd_path=f_name, count=count, src_dir=src_dir_, sync_attr=sync_attr)
         # generator.validate(str(f_name))
         generator.generate()
     except Exception as err:
@@ -66,6 +66,10 @@ def init_args():
         '-с', '--count', required=False, default=1,
         help="Количество генерируемых документов", type=int
     )
+    parser.add_argument(
+        '-sy', '--sync', dest='sync_attr', required=False, default=1,
+        help="Начальное значение синхронизируемых атрибутов.", type=int
+    )
     parser.add_argument('-r', dest='recursive_dirs', action='store_true', required=False,
                         help="Генерация всех xsd во вложенных папках.")
     parser.add_argument('-ll', '--log_level', dest="log_level", default="INFO", type=str,
@@ -88,8 +92,9 @@ if __name__ == "__main__":
     serialize = False
     path_file = src_path.joinpath("logs").joinpath(log_file_name)
     fmt = "{time} | {level: <8} | {name: ^15} | {function: ^15} | {line: >3} | {message}"
-    logger.add(path_file, level=args.log_level, serialize=serialize, format=fmt, colorize=True, rotation="2 MB")
-    logger.add(sys.stderr, level=args.log_level)
+    logger.remove()
+    logger.add(path_file, level=args.log_level, serialize=serialize, format=fmt, colorize=True, rotation="10 MB")
+    logger.add(sys.stderr, colorize=True, level=args.log_level)
 
     dst_dir = None
     if args.recursive_dirs:
@@ -126,4 +131,4 @@ if __name__ == "__main__":
             print(f'Не задан файл со схемой: {file}!')
             sys.exit(2)
 
-    main(src_dir, dst_dir, args.file, args.count, args.recursive_dirs)
+    main(src_dir, dst_dir, args.file, args.count, args.recursive_dirs, args.sync_attr)

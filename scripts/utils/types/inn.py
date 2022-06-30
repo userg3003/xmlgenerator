@@ -10,6 +10,7 @@ class InnYLType():
 
     def value(self, node_type):
         value = get_inn(node_type)
+        logger.debug(f"{InnYLType.name} value: {value}")
         return value
 
 
@@ -18,9 +19,12 @@ class InnFLType():
 
     def value(self, node_type):
         value = get_inn(node_type)
+        logger.debug(f"{InnFLType.name} value: {value}")
         return value
 
 def get_inn(node_type):
+    if node_type is None:
+        return "ИНН ТИП None"
     all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
     type_ = dict()
     for attr in all_facets_types:

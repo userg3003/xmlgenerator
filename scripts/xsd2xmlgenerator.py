@@ -34,11 +34,12 @@ def get_random_value():
 
 class Xsd2XmlGenerator:
 
-    def __init__(self, xsd_path, count, src_dir=None):
+    def __init__(self, xsd_path, count, src_dir=None, sync_attr=1):
         self.schema = xmlschema.XMLSchema(xsd_path)
         # f_rules = src_dir.joinpath("rules.xml")
         # self.rules= ET.parse(f_rules) if f_rules.is_file() else None
         # myroot =  self.rules.getroot()
+        self.sync_attr = sync_attr
         self.root = None
         self.cur_birthday = None
         self.cur_fio = None
@@ -49,14 +50,14 @@ class Xsd2XmlGenerator:
     def generate(self):
         # идем по всем рутовым элементам
         for xsd_node in self.schema.root_elements:
-            logger.trace(f" start node")
+            logger.trace(f"{'-'*10} start node {'-'*10}")
             self.root = ElementTree.Element(xsd_node.local_name)
-            print(f"-------------- {xsd_node.local_name} =============== {self.schema.filepath}")
+            logger.info(f"-------------- {xsd_node.local_name} =============== {self.schema.filepath}")
             self._recur_func(xsd_node=xsd_node, xml_node=self.root, is_root=True)
-            logger.trace(f" --------------- stop node")
+            logger.trace(f"{'='*10} stop node {'='*10}")
 
     def _recur_func(self, xsd_node, xml_node, is_root=False, fake_value=None):
-        logger.trace(f" ---------------             iter node")
+        logger.trace(f"{'-'*20} iter node {'-'*20}")
         if not is_root:
             xml_node = ElementTree.SubElement(xml_node, xsd_node.local_name)
 
@@ -113,7 +114,7 @@ class Xsd2XmlGenerator:
         tree = ElementTree.ElementTree(self.root)
         tree.write(xml_path, encoding="utf-8", xml_declaration=True)
 
-        print("Сгенерирован " + xml_path + " \nOk!!!")
+        logger.info("Сгенерирован " + xml_path + " \nOk!!!")
 
     def validate(self, xml_path):
         self.schema.validate(xml_path)
@@ -204,7 +205,8 @@ class Xsd2XmlGenerator:
     def generate_value(self, types, node_name):
         logger.trace(f"node_name: {node_name}  types: {types}")
         if node_name in self._faker.all_faker.keys():
-            logger.trace(f"node_name: {node_name}  types: {types} _faker.all_faker.keys() {self._faker.all_faker.keys()}")
+            logger.trace(
+                f"node_name: {node_name}  types: {types} _faker.all_faker.keys() {self._faker.all_faker.keys()}")
             value = self._faker.value(node_name, types[0])
 
             logger.trace(f"node_name: {node_name}  types: {types} value {value}")
