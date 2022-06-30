@@ -9,20 +9,6 @@ from scripts.xsd2xmlgenerator import Xsd2XmlGenerator
 
 xml_name = str(uuid.uuid4())
 
-src_path = Path.cwd()
-d = date.today().strftime('%Y%m%d')
-t = strftime("%H%M%S", localtime())
-log_file_name = f"xmlgenerator_{d}_{t}.logs"
-log_level = "TRACE"
-log_level = "DEBUG"
-log_level_file = "DEBUG"
-serialize = True
-path_file = src_path.joinpath("logs").joinpath(log_file_name)
-fmt = "{time} | {level: <8} | {name: ^15} | {function: ^15} | {line: >3} | {message}"
-
-# logger.add(path_file, level=log_level_file, serialize=serialize, format=fmt)
-logger.add(sys.stderr, level=log_level)
-
 
 def main(src_dir_, dst_dir_, file_, count=1, recurs=False):
     if recurs:
@@ -43,7 +29,7 @@ def scan_dirs(count, src_dir_):
         if "types" in file_.name:
             logger.warning(f"Не обработан файл {file_}")
             continue
-        logger.trace(f"START ({i+1}/{len(all_xsd)}): {file_}")
+        logger.trace(f"START ({i + 1}/{len(all_xsd)}): {file_}")
         file_name = file_.name
         path = file_.parent
         generate_xml(count, path, file_name, path)
@@ -60,22 +46,9 @@ def generate_xml(count, dst_dir_, file_, src_dir_):
         return
     out_file = str(dst_dir_.joinpath(f"{file_}_generated.xml").resolve())
     generator.write(xml_path=out_file)
-    types_file = dst_dir_.joinpath(f"{file_}_types.txt").resolve()
-    with open(types_file, "wt") as f:
-        out = "\n".join([f"{t}" for t in generator.all_types if t is not None])
-        f.write(out)
-    attr_file = dst_dir_.joinpath(f"{file_}_attr.txt").resolve()
-    with open(attr_file, "wt") as f:
-        out = "\n".join([f"{t}" for t in generator.all_attr if t is not None])
-        f.write(out)
 
 
-if __name__ == "__main__":
-    import argparse
-    import os
-    import sys
-    from pathlib import Path
-
+def init_args():
     parser = argparse.ArgumentParser(description="Генерация xml из xsd")
     parser.add_argument(
         '-s', '--srcdir', metavar='SRC-DIR', type=str, default="data",
@@ -93,13 +66,30 @@ if __name__ == "__main__":
         '-с', '--count', required=False, default=1,
         help="Количество генерируемых документов", type=int
     )
-    # parser.add_argument(
-    #     '-r', '--recurs', dest='now', action='store_true', required=False, default=True,
-    #     help="Генерация всех xsd во вложенных папках", type=int
-    # )
     parser.add_argument('-r', dest='recursive_dirs', action='store_true', required=False,
                         help="Генерация всех xsd во вложенных папках.")
+    parser.add_argument('-ll', '--log_level', dest="log_level", default="INFO", type=str,
+                        choices=['TRACE', 'DEBUG', 'INFO'],
+                        help='Уровень логирования, по умолчанию "INFO"')
     args = parser.parse_args()
+    return args
+
+
+if __name__ == "__main__":
+    import argparse
+    import os
+    import sys
+    from pathlib import Path
+
+    args = init_args()
+
+    src_path = Path.cwd()
+    log_file_name = f"xmlgenerator.logs"
+    serialize = False
+    path_file = src_path.joinpath("logs").joinpath(log_file_name)
+    fmt = "{time} | {level: <8} | {name: ^15} | {function: ^15} | {line: >3} | {message}"
+    logger.add(path_file, level=args.log_level, serialize=serialize, format=fmt, colorize=True, rotation="2 MB")
+    logger.add(sys.stderr, level=args.log_level)
 
     dst_dir = None
     if args.recursive_dirs:

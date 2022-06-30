@@ -42,8 +42,6 @@ class Xsd2XmlGenerator:
         self.root = None
         self.cur_birthday = None
         self.cur_fio = None
-        self.all_types = set()
-        self.all_attr = set()
         self.fake = make_fake()
         self.count = count
         self._faker = Fakers()
@@ -123,9 +121,6 @@ class Xsd2XmlGenerator:
 
     def get_value_for_attribute(self, node, node_type, fake_value=None):
         logger.trace(f"node.name: {node.name}")
-        self.all_types.add(node_type.local_name)
-        self.all_attr.add(f"{node.name} \t:\t {node_type}")
-        logger.trace(f"")
         if fake_value is None:
             logger.trace(f"")
             value = self.fake_attribute(node)
