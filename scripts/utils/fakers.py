@@ -4,6 +4,7 @@ from scripts.utils.attributes.attributes import Faker_
 from scripts.utils.attributes.misc import PhoneNumber, Job, Email, KolDok
 from scripts.utils.attributes.dates import Year, Month, Day
 from scripts.utils.attributes.inn import InnFL, InnYL, Inn
+from scripts.utils.attributes.fid import Fid
 from scripts.utils.attributes.position import CityName, Region, StreetName, BuildingNumber, BuildingHouse, Quarter, \
     Locality, BirthPlace
 from scripts.utils.attributes.fio import LastName, FirstName, MiddleName
@@ -44,6 +45,7 @@ class Fakers:
         self.all_faker[InnFL.name] = InnFL() # InnFL, InnYL, Inn
         self.all_faker[InnYL.name] = InnYL()
         self.all_faker[Inn.name] = Inn()
+        self.all_faker[Fid.name] = Fid()
         self.all_types = dict()
         self.all_types[NumberAbonentType.name] = NumberAbonentType()
         self.all_types[IntegerType.name] = IntegerType()

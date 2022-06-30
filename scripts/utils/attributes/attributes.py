@@ -14,5 +14,3 @@ class Faker_:
 
     def value(self, node_type=None, param=None):
         return self._value
-
-
