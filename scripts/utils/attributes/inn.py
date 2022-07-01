@@ -7,7 +7,9 @@ class InnFL(Faker_):
     name: str = "ИННФЛ"
 
     def value(self, node_type=None, param=None):
-        value = get_inn_fl(param)
+        logger.trace(f"{Inn.name} value: {node_type} param: {param}")
+        value = get_inn(node_type, param, is_fl=True)
+        # value = get_inn_fl(param)
         logger.trace(f"{InnFL.name} value: {value} param: {param}")
         return value
 
@@ -16,8 +18,9 @@ class InnYL(Faker_):
     name: str = "ИННЮЛ"
 
     def value(self, node_type=None, param=None):
-        # value = get_inn(node_type, param)
-        value = get_inn_yl(param)
+        logger.trace(f"{Inn.name} value: {node_type} param: {param}")
+        value = get_inn(node_type, param, is_fl=False)
+        # value = get_inn_yl(param)
         logger.trace(f"{InnYL.name} value: {value} param: {param}")
         return value
 
@@ -26,7 +29,7 @@ class Inn(Faker_):
     name: str = "ИНН"
 
     def value(self, node_type=None, param=None):
-        value = Faker_._fake.last_name()
+        logger.trace(f"{Inn.name} value: {node_type} param: {param}")
         value = get_inn(node_type, param)
         logger.trace(f"{Inn.name} value: {value} param: {param}")
         return value

@@ -18,7 +18,10 @@ from scripts.utils.types.inn import InnFLType, InnYLType
 from scripts.utils.types.oksm import OKSMType
 from scripts.utils.types.test_type import TESTType
 from scripts.utils.types.spdul import SPDULType, SPDULschType
+from scripts.utils.xml_utils import get_all_value_from_facet
 
+
+# from scripts.utils.types import Fake_
 
 
 class Fakers:
@@ -42,7 +45,7 @@ class Fakers:
         self.all_faker[Month.name] = Month()
         self.all_faker[Day.name] = Day()
         self.all_faker[Year.name] = Year()
-        self.all_faker[InnFL.name] = InnFL() # InnFL, InnYL, Inn
+        self.all_faker[InnFL.name] = InnFL()  # InnFL, InnYL, Inn
         self.all_faker[InnYL.name] = InnYL()
         self.all_faker[Inn.name] = Inn()
         self.all_faker[Fid.name] = Fid()
@@ -68,6 +71,12 @@ class Fakers:
         logger.trace(
             f"name: {name}   node_type: {node_type} node_type.local_name {node_type.local_name if node_type is not None else None}")
         value = None
+        # allFacets = self.all_facets(node_type)
+        # # logger.trace(f"name: {name}   node_type: {node_type}   allFacets: {allFacets}")
+        # logger.info(f"name: {name}   node_type: {node_type}   NodeTyp: {allFacets['name']}")
+        # if allFacets["name"] is None:
+        #     logger.error(f"name: {name}   node_type: {node_type}   NodeTyp: {allFacets['name']}")
+
         if "Пр" not in name and 'Дата' in name and getattr(node_type, "local_name", None) not in ["date", 'ДатаТип',
                                                                                                   'Дата_ГГГГММДД',
                                                                                                   'ДатаНТип']:
@@ -75,13 +84,15 @@ class Fakers:
             return self.date_value("%d.%m.%Y")
         elif name in self.all_faker.keys():
             logger.trace(f"name: {name}   node_type: {node_type}")
-            value = self.all_faker[name].value(node_type,sync_attr)
+            value = self.all_faker[name].value(node_type, sync_attr)
         elif node_type.local_name in self.all_types:
             logger.trace(f"name: {name}   node_type: {node_type}")
-            value = self.all_types[node_type.local_name].value(node_type,sync_attr)
-        elif getattr(node_type.base_type, "name", None)  in self.all_types:
+            value = self.all_types[node_type.local_name].value(node_type, sync_attr)
+        elif getattr(node_type.base_type, "name", None) in self.all_types:
             logger.trace(f"name: {name}   node_type.base_type.name: {node_type.base_type.name}")
-            value = self.all_types[node_type.base_type.name].value(node_type,sync_attr)
+            value = self.all_types[node_type.base_type.name].value(node_type, sync_attr)
+        # elif name in ['Код']:
+        #     allFacets = self.all_facets(node_type)
         elif getattr(node_type, "primitive_type", None) is not None and \
                 node_type.primitive_type.local_name in self.all_types and \
                 name in ['СрокДисквЛет', 'СрокДисквМес', 'СрокДисквДн', 'Отправитель', 'ИнвПрич',
@@ -90,7 +101,7 @@ class Fakers:
                          'ДатаОсвоб', 'ДатаВСилу', 'ДатаАрест', 'ДатаЦиркРоз', 'ДатаИзменРоз', 'Индекс',
                          'КодРегион', 'ДоляПроц']:
             logger.trace(f"name: {name}   node_type: {node_type}")
-            value = self.all_types[node_type.primitive_type.local_name].value(node_type,sync_attr)
+            value = self.all_types[node_type.primitive_type.local_name].value(node_type, sync_attr)
         elif "Пр" not in name and 'Дата' in name and getattr(node_type, "local_name", None) != "date":
             logger.trace(f"name: {name}   node_type: {node_type}")
             value = self.date_value("%d.%m.%Y")
@@ -100,3 +111,74 @@ class Fakers:
     def date_value(pattern):
         return Faker_._fake.date_between_dates(date_start=date(1900, 1, 1), date_end=date(2099, 12, 31)).strftime(
             pattern)
+
+    @staticmethod
+    def all_facets(node_type):
+        # value = Fake_.numerify(text=f"{'#'*{facts_values['length']}")
+        all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
+        logger.trace(f" node_type: {node_type}")
+        type_ = dict()
+        node_name = "node_type"
+        type_[node_name] = Fakers.all_facets_fot_type(node_name, node_type)
+        logger.trace(f"node_name {node_name}")
+        node_name = "base_type"
+        type_[node_name] = Fakers.get_facets(node_name, node_type)
+        logger.trace(f"node_name {node_name}")
+        node_name = "primitive_type"
+        type_[node_name] = Fakers.get_facets(node_name, node_type)
+        logger.trace(f"node_name {node_name}")
+        node_name = "member_types"
+        type_[node_name] = Fakers.get_facets(node_name, node_type)
+        logger.trace(f"node_name {node_name}")
+
+        # Объеденить типы
+        merged_type = dict()
+        for key in type_["node_type"]:
+            if  type_["node_type"][key] is not None:
+                merged_type[key] = type_["node_type"][key]
+            elif type_["primitive_type"] is not None and type_["primitive_type"][key] is not None:
+                merged_type[key] = type_["primitive_type"][key]
+            elif type_["base_type"] is not None and type_["base_type"][key] is not None:
+                merged_type[key] = type_["base_type"][key]
+            elif type_["member_types"] is not None and type_["member_types"][key] is not None:
+                merged_type[key] = type_["member_types"][key]
+            else:
+                merged_type[key] = None
+
+        return merged_type
+
+    @staticmethod
+    def get_facets(node_name, node_type):
+        type_ = None
+        base_type = getattr(node_type, node_name, None)
+        if base_type is not None:
+            type_ = Fakers.all_facets_fot_type(node_name, base_type)
+        return type_
+
+    @staticmethod
+    def all_facets_fot_type(node_name, node_type):
+        type_ = dict()
+        logger.trace(f" node_name {node_name}   node_type: {node_type}")
+        for attr in node_type.facets:
+            if attr is not None:
+                attr_name = attr.split("}")[1]
+                type_[attr_name] = getattr(node_type.facets[attr], "value", None)
+        name_attr = "name"
+        name = getattr(node_type, name_attr, None)
+        if name is not None:
+            nn = name.split("}")
+            type_[name_attr] = name.split("}")[1] if len(nn) > 1 else nn[0]
+        else:
+            type_[name_attr] = None
+        type_["local_name"] = getattr(node_type, "local_name", None)
+        type_["max_length"] = getattr(node_type, "max_length", None)
+        type_["min_length"] = getattr(node_type, "min_length", None)
+        type_["max_value"] = getattr(node_type, "max_value", None)
+        type_["min_value"] = getattr(node_type, "min_value", None)
+        type_["pattern"] = getattr(node_type, "pattern", None)
+        patterns = getattr(node_type, "patterns", None)
+        type_["patterns"] = getattr(patterns, "regexps", None) if patterns is not None else None
+
+        type_["enumeration"] = getattr(node_type, "enumeration", None)
+
+        return type_

@@ -10,12 +10,12 @@ class Fid(Faker_):
     def value(self, node_type=None, param=None):
         value = Faker_._fake.last_name()
         value = Fid.get_fid(node_type, param)
-        logger.debug(f"{Fid.name} value: {value} param: {param}")
+        logger.trace(f"{Fid.name} value: {value} param: {param}")
         return value
 
     @staticmethod
     def get_fid(node_type, param):
-        logger.debug(f"{node_type}  param: {param}")
+        logger.trace(f"{node_type}  param: {param}")
         if node_type is None:
             return "ФИД ТИП None"
         all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
