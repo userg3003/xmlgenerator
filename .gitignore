@@ -136,4 +136,4 @@ dmypy.json
 /data/schemes_300522_test_1/
 /data/schemes_300522_err/
 /data/
-/tests/
+/tests/*
