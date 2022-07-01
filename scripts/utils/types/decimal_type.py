@@ -13,14 +13,15 @@ class DecimalType():
     name: str = "decimal"
 
     def value(self, node_type, sync_attr=None):
-        all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
-        type_ = dict()
-        value=None
-        for attr in all_facets_types:
-            type_[attr] = get_value_from_facet(node_type.facets, attr)
-        if all(element in all_facets_types for element in ['minInclusive', 'maxInclusive']):
-            value = Fake_.random_int(min=type_['minInclusive'], max=type_['maxInclusive'])
-        if "totalDigits" in all_facets_types:
-            pattern = "#" * type_["totalDigits"]
-            value = str(value)[:type_["totalDigits"]] if value is not None else Fake_.numerify(text=pattern)
-        return value
+        minInclusive = node_type.get("minInclusive", None)
+        maxInclusive = node_type.get("maxInclusive", None)
+        value = None
+        if minInclusive is not None and maxInclusive is not None:
+            value = Fake_.random_int(min=node_type['minInclusive'], max=node_type['maxInclusive'])
+        totalDigits = node_type.get("totalDigits", None)
+        if totalDigits is not None:
+            pattern = "#" * totalDigits
+            value = str(value)[:totalDigits] if value is not None else Fake_.numerify(text=pattern)
+        if value is  None:
+            value = Fake_.numerify(text="###")
+        return str(value)

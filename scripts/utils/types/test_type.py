@@ -9,11 +9,10 @@ class TESTType():
     name: str = "ТЕСТТип"
 
     def value(self, node_type, sync_attr=None):
-        all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
-        type_ = dict()
-        for attr in all_facets_types:
-            type_[attr] = get_value_from_facet(node_type.facets, attr)
         value = None
-        if all(element in all_facets_types for element in ['pattern']):
-            value = rstr.xeger(type_['pattern'])
+        if node_type['pattern'] is not None:
+            value = rstr.xeger(node_type['pattern'][0])
+        else:
+            pattern = "#" * 2
+            value = Fake_.numerify(text=pattern)
         return value

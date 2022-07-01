@@ -18,11 +18,7 @@ class Fid(Faker_):
         logger.trace(f"{node_type}  param: {param}")
         if node_type is None:
             return "ФИД ТИП None"
-        all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
-        type_ = dict()
-        for attr in all_facets_types:
-            type_[attr] = get_value_from_facet(node_type.facets, attr)
-        totalDigits = type_['totalDigits'] if 'totalDigits' in type_.keys() else 10
+        # totalDigits = node_type['totalDigits'] if node_type['totalDigits'] is not None else 10
         # length = type_['length'] if 'length' in type_.keys() else 10
         # length = type_['maxLength'] if 'maxLength' in type_.keys() else length
         # pattern = "#" * length

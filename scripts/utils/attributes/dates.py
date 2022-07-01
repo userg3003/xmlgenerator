@@ -1,3 +1,4 @@
+from datetime import date
 from scripts.utils.attributes.attributes import Faker_
 
 
@@ -20,3 +21,5 @@ class Day(Faker_):
 
     def value(self, node_type=None, param=None):
         return Faker_._fake.day_of_month()
+
+

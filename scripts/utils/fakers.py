@@ -13,7 +13,7 @@ from scripts.utils.types.integer_type import IntegerType, LongType, IntType
 from scripts.utils.types.decimal_type import DecimalType
 from scripts.utils.types.snils import SnilsType
 from scripts.utils.types.string_type import StringType
-from scripts.utils.types.data_type import DataType, DataYmdType, DataNType
+from scripts.utils.types.data_type import DataType, DataYmdType, DataNType, Date
 from scripts.utils.types.inn import InnFLType, InnYLType
 from scripts.utils.types.oksm import OKSMType
 from scripts.utils.types.test_type import TESTType
@@ -41,7 +41,7 @@ class Fakers:
         self.all_faker[Email.name] = Email()
         self.all_faker[Locality.name] = Locality()
         self.all_faker[BirthPlace.name] = BirthPlace()
-        self.all_faker[KolDok.name] = Email()
+        self.all_faker[KolDok.name] = KolDok()
         self.all_faker[Month.name] = Month()
         self.all_faker[Day.name] = Day()
         self.all_faker[Year.name] = Year()
@@ -58,6 +58,7 @@ class Fakers:
         self.all_types[StringType.name] = StringType()
         self.all_types[SnilsType.name] = SnilsType()
         self.all_types[DataType.name] = DataType()
+        self.all_types[Date.name] = Date()
         self.all_types[DataYmdType.name] = DataYmdType()
         self.all_types[DataNType.name] = DataNType()
         self.all_types[InnFLType.name] = InnFLType()
@@ -68,14 +69,10 @@ class Fakers:
         self.all_types[SPDULschType.name] = SPDULschType()
 
     def value(self, name, node_type=None, sync_attr=None):
-        logger.trace(
+        logger.debug(
             f"name: {name}   node_type: {node_type} node_type.local_name {node_type.local_name if node_type is not None else None}")
         value = None
-        # allFacets = self.all_facets(node_type)
-        # # logger.trace(f"name: {name}   node_type: {node_type}   allFacets: {allFacets}")
-        # logger.info(f"name: {name}   node_type: {node_type}   NodeTyp: {allFacets['name']}")
-        # if allFacets["name"] is None:
-        #     logger.error(f"name: {name}   node_type: {node_type}   NodeTyp: {allFacets['name']}")
+        merged_types = self.all_facets(node_type)
 
         if "Пр" not in name and 'Дата' in name and getattr(node_type, "local_name", None) not in ["date", 'ДатаТип',
                                                                                                   'Дата_ГГГГММДД',
@@ -84,24 +81,17 @@ class Fakers:
             return self.date_value("%d.%m.%Y")
         elif name in self.all_faker.keys():
             logger.trace(f"name: {name}   node_type: {node_type}")
-            value = self.all_faker[name].value(node_type, sync_attr)
-        elif node_type.local_name in self.all_types:
+            value = self.all_faker[name].value(merged_types, sync_attr)
+        elif merged_types['name'] in self.all_types:
             logger.trace(f"name: {name}   node_type: {node_type}")
-            value = self.all_types[node_type.local_name].value(node_type, sync_attr)
-        elif getattr(node_type.base_type, "name", None) in self.all_types:
-            logger.trace(f"name: {name}   node_type.base_type.name: {node_type.base_type.name}")
-            value = self.all_types[node_type.base_type.name].value(node_type, sync_attr)
-        # elif name in ['Код']:
-        #     allFacets = self.all_facets(node_type)
-        elif getattr(node_type, "primitive_type", None) is not None and \
-                node_type.primitive_type.local_name in self.all_types and \
-                name in ['СрокДисквЛет', 'СрокДисквМес', 'СрокДисквДн', 'Отправитель', 'ИнвПрич',
+            value = self.all_types[merged_types['name']].value(merged_types, sync_attr)
+        elif name in ['СрокДисквЛет', 'СрокДисквМес', 'СрокДисквДн', 'Отправитель', 'ИнвПрич',
                          'Датазаключенияконтракта', 'Датаначала', 'Датаокончания', 'ИНН', 'ИндРейтинг',
                          'ИдЕРН', 'ДатаСвед', 'ПрПодп', 'Код', 'Тип', 'КПП', 'ДатаКонДискв',
                          'ДатаОсвоб', 'ДатаВСилу', 'ДатаАрест', 'ДатаЦиркРоз', 'ДатаИзменРоз', 'Индекс',
                          'КодРегион', 'ДоляПроц']:
             logger.trace(f"name: {name}   node_type: {node_type}")
-            value = self.all_types[node_type.primitive_type.local_name].value(node_type, sync_attr)
+            value = self.all_types[merged_types["local_name"]].value(merged_types, sync_attr)
         elif "Пр" not in name and 'Дата' in name and getattr(node_type, "local_name", None) != "date":
             logger.trace(f"name: {name}   node_type: {node_type}")
             value = self.date_value("%d.%m.%Y")
@@ -134,25 +124,77 @@ class Fakers:
         # Объеденить типы
         merged_type = dict()
         for key in type_["node_type"]:
-            if  type_["node_type"][key] is not None:
+            if type_["node_type"][key] is not None:
                 merged_type[key] = type_["node_type"][key]
-            elif type_["primitive_type"] is not None and type_["primitive_type"][key] is not None:
+            elif type_["primitive_type"] is not None and type_["primitive_type"].get(key, None) is not None:
                 merged_type[key] = type_["primitive_type"][key]
-            elif type_["base_type"] is not None and type_["base_type"][key] is not None:
+            elif type_["base_type"] is not None and type_["base_type"].get(key, None) is not None:
                 merged_type[key] = type_["base_type"][key]
-            elif type_["member_types"] is not None and type_["member_types"][key] is not None:
+            elif type_["member_types"] is not None and type_["member_types"].get(key, None) is not None:
                 merged_type[key] = type_["member_types"][key]
             else:
                 merged_type[key] = None
+        Fakers.add_keys(merged_type, type_, "primitive_type")
+        Fakers.add_keys(merged_type, type_, "base_type")
+        Fakers.add_keys(merged_type, type_, "member_types")
 
+        if merged_type["local_name"] not in ["string", "decimal", "float", "int", "integer", "boolean", "data", "time",
+                                             "duration", "gYear", "gMonth",
+                                             "dataTime"]:
+            if type_["primitive_type"] is not None:
+                if type_["primitive_type"].get("name", None) is not None:
+                    merged_type["local_name"] = type_["primitive_type"]["name"]
+                if type_["primitive_type"].get("local_name", None) is not None:
+                    merged_type["local_name"] = type_["primitive_type"]["local_name"]
+
+            elif type_["base_type"] is not None:
+                if type_["base_type"].get("name", None) is not None:
+                    merged_type["local_name"] = type_["base_type"]["name"]
+                if type_["base_type"].get("local_name", None) is not None:
+                    merged_type["local_name"] = type_["base_type"]["local_name"]
+            elif type_["primitive_type"] is not None:
+                if type_["primitive_type"].get("name", None) is not None:
+                    merged_type["local_name"] = type_["primitive_type"]["name"]
+                if type_["primitive_type"].get("local_name", None) is not None:
+                    merged_type["local_name"] = type_["primitive_type"]["local_name"]
+            elif type_["member_types"] is not None:
+                if type_["member_types"].get("name", None) is not None:
+                    merged_type["local_name"] = type_["member_types"]["name"]
+                if type_["member_types"].get("local_name", None) is not None:
+                    merged_type["local_name"] = type_["member_types"]["local_name"]
+        if merged_type['name'] is None:
+            merged_type['name'] = "string"
+        if merged_type['local_name'] is None:
+            merged_type['name'] = "string"
         return merged_type
+
+    @staticmethod
+    def add_keys(merged_type, type_, name):
+        if type_[name] is not None:
+            for key in type_[name].keys():
+                if key not in merged_type.keys():
+                    merged_type[key] = type_[name][key]
 
     @staticmethod
     def get_facets(node_name, node_type):
         type_ = None
         base_type = getattr(node_type, node_name, None)
         if base_type is not None:
-            type_ = Fakers.all_facets_fot_type(node_name, base_type)
+            if isinstance(base_type, list):
+                types = dict()
+                for i, item in enumerate(base_type):
+                    t = Fakers.all_facets_fot_type(f"member {i}", item)
+                    if i > 0:
+                        for key in t.keys():
+                            if t[key] is not None and types.get(key, None) is None:
+                                types[key] = t[key]
+                    else:
+                        types = t
+                if types != dict():
+                    type_ = types
+                logger.trace(f"")
+            else:
+                type_ = Fakers.all_facets_fot_type(node_name, base_type)
         return type_
 
     @staticmethod

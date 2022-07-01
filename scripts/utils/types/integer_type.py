@@ -18,6 +18,10 @@ class IntType():
 
 
 def get_value(node_type):
+    value = Fake_.random_int(min=node_type['minInclusive'], max=node_type['maxInclusive'])
+    return value
+
+def get_value_prev(node_type):
     all_facets_types = [item.split("}")[1] for item in node_type.facets if item is not None]
     type_ = dict()
     for attr in all_facets_types:
