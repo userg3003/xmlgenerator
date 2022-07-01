@@ -68,7 +68,7 @@ def init_args():
     )
     parser.add_argument(
         '-sy', '--sync', dest='sync_attr', required=False, default=1,
-        help="Начальное значение синхронизируемых атрибутов.", type=int
+        help="Начальное значение синхронизируемых атрибутов (целое число).", type=int
     )
     parser.add_argument('-r', dest='recursive_dirs', action='store_true', required=False,
                         help="Генерация всех xsd во вложенных папках.")

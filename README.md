@@ -12,7 +12,7 @@
 
 ## Запуск скрипта
 
-> python xmlfromxsd.py [-h] [-s SRC-DIR] [-t TARGET-DIR] -f FILE
+> python xmlfromxsd.py [-h] [-s SRC-DIR] [-t TARGET-DIR] -f FILE  -c 3 -sy 10 -ll DEBUG
 
 
 Парамеетры:  
@@ -33,4 +33,11 @@
   <dt>-c COUNT, --count COUNT</dt>
     <dd>Количество генерируемых документов. По умолчанию 1. 
     </dd>
+  <dt>-sy SYNC_ATTR, --sync SYNC_ATTR</dt>
+    <dd>Начальное значение синхронизируемых атрибутов (целое число).
+  </dd>
+  <dt>-r                    Генерация всех xsd во вложенных папках.</dt>
+  <dt>-ll {TRACE,DEBUG,INFO}, --log_level {TRACE,DEBUG,INFO}</dt>
+                        <dd>Уровень логирования, по умолчанию "INFO"</dd>
+
 </dl>
