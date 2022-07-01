@@ -137,3 +137,4 @@ dmypy.json
 /data/schemes_300522_err/
 /data/
 /tests/** *
+import_data.sh
